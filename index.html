@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+  <title>[2n] 公会 · 欢迎</title>
+  <!-- Font Awesome 图标库 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #f5f7fa;
+      font-family: 'Segoe UI', 'Roboto', system-ui, sans-serif;
+      color: #1e2b3c;
+      padding: 20px 16px 30px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .page {
+      max-width: 1000px;
+      width: 100%;
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(2px);
+      border-radius: 36px;
+      padding: 24px 24px 20px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.05);
+    }
+
+    /* 头部：标题 + 语言切换 */
+    .header-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    .main-title {
+      font-size: clamp(28px, 8vw, 52px);
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+      background: linear-gradient(135deg, #0b3b5c, #2b5e7c);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-right: 16px;
+    }
+
+    /* 语言下拉组件 */
+    .lang-wrapper {
+      position: relative;
+      user-select: none;
+    }
+
+    .lang-btn {
+      background: white;
+      border: 1px solid #cfdde9;
+      border-radius: 40px;
+      padding: 10px 18px;
+      font-size: 1rem;
+      font-weight: 500;
+      color: #1e3b4f;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.02);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s;
+      backdrop-filter: blur(4px);
+      background: rgba(255,255,255,0.8);
+    }
+
+    .lang-btn i {
+      font-size: 1rem;
+      transition: transform 0.2s;
+    }
+
+    .lang-btn.active i {
+      transform: rotate(180deg);
+    }
+
+    .lang-dropdown {
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+      border: 1px solid #e2eaf1;
+      overflow: hidden;
+      min-width: 140px;
+      z-index: 100;
+      display: none;
+    }
+
+    .lang-dropdown.show {
+      display: block;
+    }
+
+    .lang-option {
+      padding: 12px 20px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.1s;
+      color: #1e3b4f;
+    }
+
+    .lang-option:hover {
+      background: #e6f0f9;
+    }
+
+    .lang-option.selected {
+      background: #d4e2f0;
+      color: #0a3144;
+    }
+
+    /* 领导区域 (会长/副会长) */
+    .leaders {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 36px;
+      gap: 12px;
+    }
+
+    .leader-card {
+      flex: 1;
+      text-align: center;
+      background: rgba(255,255,255,0.5);
+      border-radius: 40px;
+      padding: 16px 8px 20px;
+      backdrop-filter: blur(4px);
+      box-shadow: 0 6px 12px rgba(46, 78, 102, 0.04);
+    }
+
+    .leader-emoji {
+      font-size: clamp(3.5rem, 18vw, 8rem);
+      line-height: 1;
+    }
+
+    .leader-label {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-top: 6px;
+      color: #2b4e65;
+    }
+
+    .leader-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-top: 4px;
+      color: #0b2f44;
+      letter-spacing: 0.5px;
+    }
+
+    /* 矩形框上方小标题 */
+    .section-titles {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 12px;
+      padding: 0 4px;
+    }
+
+    .title-left {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #1b4b64;
+      letter-spacing: -0.3px;
+    }
+
+    .title-right {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #1b4b64;
+      text-align: right;
+    }
+
+    /* 主矩形卡片 */
+    .info-card {
+      background: #ffffffd9;
+      backdrop-filter: blur(8px);
+      border-radius: 32px;
+      padding: 28px 24px;
+      box-shadow: 0 20px 35px -8px rgba(21, 50, 70, 0.1);
+      border: 1px solid #ffffff70;
+      margin-bottom: 28px;
+    }
+
+    .card-content {
+      display: flex;
+      gap: 24px;
+    }
+
+    .quickstart-area {
+      flex: 8; /* 约80% */
+      font-size: 1rem;
+      line-height: 1.6;
+      color: #1f3f54;
+    }
+
+    .quickstart-area p {
+      margin-bottom: 1em;
+    }
+
+    .quickstart-area a {
+      color: #1e6f9f;
+      text-decoration: none;
+      font-weight: 500;
+      border-bottom: 1.5px dotted #7fa9c7;
+    }
+
+    .quickstart-area a:hover {
+      color: #0a4c70;
+      border-bottom-style: solid;
+    }
+
+    .portal-area {
+      flex: 2; /* 约20% */
+      border-left: 2px dashed #b7d0e2;
+      padding-left: 20px;
+    }
+
+    .portal-list {
+      list-style: none;
+    }
+
+    .portal-item {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+      word-break: break-word;
+    }
+
+    .portal-label {
+      font-weight: 600;
+      color: #1e4e6b;
+      flex-shrink: 0;
+      margin-right: 10px;
+      min-width: 100px; /* 给标签留出足够空间 */
+    }
+
+    .portal-value {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      background: #ecf3f9;
+      padding: 6px 12px;
+      border-radius: 40px;
+      flex: 1;
+      word-break: break-all;
+    }
+
+    .portal-value span {
+      color: #0d3e58;
+      white-space: normal;      /* 允许换行 */
+      word-break: break-all;    /* 强制长链接断行 */
+      line-height: 1.4;
+      flex: 1;
+    }
+
+    .copy-btn {
+      background: none;
+      border: none;
+      color: #3a7799;
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 30px;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .copy-btn:hover {
+      background: #cbdde9;
+      color: #0b3e5c;
+    }
+
+    /* 移动端适配 */
+    @media (max-width: 680px) {
+      .page { padding: 18px 16px 20px; }
+      .card-content {
+        flex-direction: column;
+      }
+      .portal-area {
+        border-left: none;
+        border-top: 2px dashed #b7d0e2;
+        padding-left: 0;
+        padding-top: 20px;
+        margin-top: 8px;
+      }
+      .portal-label {
+        min-width: 85px;
+      }
+      .leader-emoji {
+        font-size: clamp(3rem, 16vw, 7rem);
+      }
+    }
+
+    /* 底部版权 */
+    .footer {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #8a9eb0;
+      letter-spacing: 0.3px;
+    }
+
+    .footer i {
+      margin: 0 4px;
+    }
+
+    .spacer {
+      height: 8px;
+    }
+
+    /* 复制成功提示 */
+    .toast-tip {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1e3b4f;
+      color: white;
+      padding: 8px 18px;
+      border-radius: 60px;
+      font-size: 0.9rem;
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+      z-index: 999;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+  <!-- 标题行 + 语言切换 -->
+  <div class="header-row">
+    <div class="main-title" id="guildTitle">欢迎各位花花加入[2n]公会</div>
+    <div class="lang-wrapper" id="langWrapper">
+      <div class="lang-btn" id="langButton">
+        <span id="langDisplay">中文</span>
+        <i class="fas fa-chevron-down" id="langArrow"></i>
+      </div>
+      <div class="lang-dropdown" id="langDropdown">
+        <div class="lang-option" data-lang="zh">中文</div>
+        <div class="lang-option" data-lang="en">English</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 会长 / 副会长 -->
+  <div class="leaders">
+    <div class="leader-card">
+      <div class="leader-emoji">🥇</div>
+      <div class="leader-label" id="leaderLabel1">会长</div>
+      <div class="leader-name">awdc</div>
+    </div>
+    <div class="leader-card">
+      <div class="leader-emoji">🥈</div>
+      <div class="leader-label" id="leaderLabel2">副会长</div>
+      <div class="leader-name">flowerwsr</div>
+    </div>
+  </div>
+
+  <!-- 矩形上方小标题 -->
+  <div class="section-titles">
+    <div class="title-left" id="quickStartTitle">快速上手</div>
+    <div class="title-right" id="portalTitle">传送门</div>
+  </div>
+
+  <!-- 矩形卡片区域 -->
+  <div class="info-card">
+    <div class="card-content">
+      <!-- 左侧快速上手内容 (动态渲染) -->
+      <div class="quickstart-area" id="quickstartContent"></div>
+      <!-- 右侧传送门 (动态渲染带复制按钮) -->
+      <div class="portal-area">
+        <ul class="portal-list" id="portalList"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部版权 -->
+  <div class="footer">
+    <i class="far fa-copyright"></i> Copyright 2026 GitHub@pythonWsr Florrio@flowerwsr
+  </div>
+</div>
+
+<!-- 轻提示 -->
+<div class="toast-tip" id="copyToast">📋 已复制</div>
+
+<script>
+  (function(){
+    "use strict";
+
+    // ---------- 多语言文本定义 ----------
+    const i18n = {
+      zh: {
+        guildTitle: '欢迎各位花花加入[2n]公会',
+        langDisplay: '中文',
+        leader1: '会长',
+        leader2: '副会长',
+        quickStartTitle: '快速上手',
+        portalTitle: '传送门',
+        quickHtml: `
+          <p>公会有一个WPS云文档，用于统计各成员的信息，当然还有其他功能，<a href="https://www.kdocs.cn/l/cvM5Vz8Fd3dC" target="_blank">点击这里进入</a>。</p>
+          <p>我们实现了通过等级计算TP点数、填写拥有的Super花瓣自动计数、单元格添加成员权限（需在WPS中添加flowerwsr为<a href="https://kdocs.cn/i/MfxUDULv" target="_blank">联系人</a>），甚至还有排行榜的自动更新。</p>
+          <p>Mark List虽然并不常用，但不代表我们没有，这是公会排面大不大的问题。</p>
+          <p>表格单元格中还插入了几个快速链接，例如<a href="https://storm-let.github.io/florr-dps/" target="_blank">DPS</a>的计算和存活<a href="https://mobs.ashish.top" target="_blank">Super</a>生物的查看。</p>
+          <p>添加会长微信：Zjk-1332（周末有空） 快速拉入公会群聊！</p>
+        `,
+        portalItems: [
+          { label: '会长微信号：', value: 'Zjk-1332', type: 'text' },
+          { label: '公会表格：', value: 'https://www.kdocs.cn/l/cvM5Vz8Fd3dC', type: 'link' },
+          { label: '添加 WPS联系人：', value: 'https://kdocs.cn/i/MfxUDULv', type: 'link' },
+          { label: 'DPS计算：', value: 'https://storm-let.github.io/florr-dps/', type: 'link' },
+          { label: 'Super生物：', value: 'https://mobs.ashish.top', type: 'link' }
+        ]
+      },
+      en: {
+        guildTitle: 'Welcome guys to join the guild [2n]',
+        langDisplay: 'English',
+        leader1: 'Leader',
+        leader2: 'Vice Leader',
+        quickStartTitle: 'Quick Start',
+        portalTitle: 'Quick Links',
+        quickHtml: `
+          <p>The guild has a WPS Cloud Document for recording member information, along with other features. <a href="https://www.kdocs.cn/l/cvM5Vz8Fd3dC" target="_blank">Click here to access it</a>.</p>
+          <p>We have achieved automatic calculation of TP points through tiering, automatic counting of owned Super petals, cell member addition permissions (requiring the addition of flowerwsr as a <a href="https://kdocs.cn/i/MfxUDULv" target="_blank">contact</a> in WPS), and even automatic leaderboard updates.</p>
+          <p>Although the Mark List is not commonly used, it does not mean we lack it—it's a matter of whether the guild's prestige is significant.</p>
+          <p>Several quick links were also inserted into the table cells, such as <a href="https://storm-let.github.io/florr-dps/" target="_blank">DPS calculation</a> and viewing the Surviving <a href="https://mobs.ashish.top" target="_blank">Super</a> creatures.</p>
+          <p>Add the guild leader's WeChat: Zjk-1332 (Available during weekends) To quickly join the guild group chat!</p>
+        `,
+        portalItems: [
+          { label: 'Leader WeChat:', value: 'Zjk-1332', type: 'text' },
+          { label: 'Guild Sheet:', value: 'https://www.kdocs.cn/l/cvM5Vz8Fd3dC', type: 'link' },
+          { label: 'Add WPS Contact:', value: 'https://kdocs.cn/i/MfxUDULv', type: 'link' },
+          { label: 'DPS Calc:', value: 'https://storm-let.github.io/florr-dps/', type: 'link' },
+          { label: 'Super Mobs:', value: 'https://mobs.ashish.top', type: 'link' }
+        ]
+      }
+    };
+
+    let currentLang = 'zh';
+
+    // DOM 元素
+    const guildTitleEl = document.getElementById('guildTitle');
+    const langDisplaySpan = document.getElementById('langDisplay');
+    const leaderLabel1 = document.getElementById('leaderLabel1');
+    const leaderLabel2 = document.getElementById('leaderLabel2');
+    const quickStartTitleEl = document.getElementById('quickStartTitle');
+    const portalTitleEl = document.getElementById('portalTitle');
+    const quickstartContent = document.getElementById('quickstartContent');
+    const portalList = document.getElementById('portalList');
+
+    const langBtn = document.getElementById('langButton');
+    const langDropdown = document.getElementById('langDropdown');
+    const langArrow = document.getElementById('langArrow');
+    const langWrapper = document.getElementById('langWrapper');
+
+    // 渲染语言
+    function renderLanguage(lang) {
+      const data = i18n[lang];
+      if (!data) return;
+
+      guildTitleEl.textContent = data.guildTitle;
+      langDisplaySpan.textContent = data.langDisplay;
+      leaderLabel1.textContent = data.leader1;
+      leaderLabel2.textContent = data.leader2;
+      quickStartTitleEl.textContent = data.quickStartTitle;
+      portalTitleEl.textContent = data.portalTitle;
+
+      quickstartContent.innerHTML = data.quickHtml;
+      renderPortalItems(data.portalItems);
+      
+      document.querySelectorAll('.lang-option').forEach(opt => {
+        opt.classList.toggle('selected', opt.dataset.lang === lang);
+      });
+    }
+
+    // 渲染传送门 — 完整显示链接，不截断
+    function renderPortalItems(items) {
+      portalList.innerHTML = '';
+      items.forEach(item => {
+        const li = document.createElement('li');
+        li.className = 'portal-item';
+        
+        const labelSpan = document.createElement('span');
+        labelSpan.className = 'portal-label';
+        labelSpan.textContent = item.label;
+        
+        const valueDiv = document.createElement('div');
+        valueDiv.className = 'portal-value';
+        
+        const valueSpan = document.createElement('span');
+        // 完整显示值，不截断
+        valueSpan.textContent = item.value;
+        valueSpan.title = item.value; // 悬停依然可看完整
+        
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'copy-btn';
+        copyBtn.innerHTML = '<i class="far fa-copy"></i>';
+        copyBtn.setAttribute('aria-label', '复制');
+        copyBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const textToCopy = item.value;
+          if (navigator.clipboard?.writeText) {
+            navigator.clipboard.writeText(textToCopy).then(() => {
+              showToast('已复制');
+            }).catch(() => fallbackCopy(textToCopy));
+          } else {
+            fallbackCopy(textToCopy);
+          }
+        });
+        
+        valueDiv.appendChild(valueSpan);
+        valueDiv.appendChild(copyBtn);
+        
+        li.appendChild(labelSpan);
+        li.appendChild(valueDiv);
+        portalList.appendChild(li);
+      });
+    }
+
+    function fallbackCopy(text) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      showToast('已复制');
+    }
+
+    const toast = document.getElementById('copyToast');
+    let toastTimer;
+    function showToast(msg) {
+      toast.textContent = `📋 ${msg}`;
+      toast.style.opacity = '1';
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.style.opacity = '0';
+      }, 1500);
+    }
+
+    // 下拉交互
+    function openDropdown() {
+      langDropdown.classList.add('show');
+      langBtn.classList.add('active');
+    }
+    function closeDropdown() {
+      langDropdown.classList.remove('show');
+      langBtn.classList.remove('active');
+    }
+    function toggleDropdown() {
+      langDropdown.classList.contains('show') ? closeDropdown() : openDropdown();
+    }
+
+    langBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleDropdown();
+    });
+
+    document.querySelectorAll('.lang-option').forEach(opt => {
+      opt.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const lang = opt.dataset.lang;
+        if (lang && lang !== currentLang) {
+          currentLang = lang;
+          renderLanguage(currentLang);
+        }
+        closeDropdown();
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!langWrapper.contains(e.target)) {
+        closeDropdown();
+      }
+    });
+
+    langDropdown.addEventListener('click', (e) => e.stopPropagation());
+
+    // 初始化中文
+    renderLanguage('zh');
+  })();
+</script>
+</body>
+</html>
