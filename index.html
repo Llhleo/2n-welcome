@@ -233,40 +233,38 @@
       list-style: none;
     }
 
+    /* 修改：标签在上，链接/值在下 */
     .portal-item {
       display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      margin-bottom: 20px;
-      font-size: 0.95rem;
-      word-break: break-word;
+      flex-direction: column;   /* 垂直排列 */
+      margin-bottom: 24px;
     }
 
     .portal-label {
-      font-weight: 600;
+      font-weight: 700;
       color: #1e4e6b;
-      flex-shrink: 0;
-      margin-right: 10px;
-      min-width: 100px; /* 给标签留出足够空间 */
+      margin-bottom: 6px;
+      font-size: 0.95rem;
+      letter-spacing: 0.3px;
     }
 
-    .portal-value {
+    .portal-value-row {
       display: flex;
-      align-items: flex-start;
-      gap: 8px;
+      align-items: center;
       background: #ecf3f9;
-      padding: 6px 12px;
       border-radius: 40px;
-      flex: 1;
+      padding: 6px 12px 6px 16px;
       word-break: break-all;
     }
 
-    .portal-value span {
-      color: #0d3e58;
-      white-space: normal;      /* 允许换行 */
-      word-break: break-all;    /* 强制长链接断行 */
-      line-height: 1.4;
+    .portal-value-text {
       flex: 1;
+      color: #0d3e58;
+      font-size: 0.95rem;
+      white-space: normal;
+      word-break: break-all;
+      line-height: 1.4;
+      margin-right: 8px;
     }
 
     .copy-btn {
@@ -275,14 +273,13 @@
       color: #3a7799;
       font-size: 1.2rem;
       cursor: pointer;
-      padding: 2px 6px;
+      padding: 4px 6px;
       border-radius: 30px;
       transition: all 0.15s;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      margin-top: 2px;
     }
 
     .copy-btn:hover {
@@ -303,9 +300,6 @@
         padding-top: 20px;
         margin-top: 8px;
       }
-      .portal-label {
-        min-width: 85px;
-      }
       .leader-emoji {
         font-size: clamp(3rem, 16vw, 7rem);
       }
@@ -322,10 +316,6 @@
 
     .footer i {
       margin: 0 4px;
-    }
-
-    .spacer {
-      height: 8px;
     }
 
     /* 复制成功提示 */
@@ -470,7 +460,6 @@
 
     const langBtn = document.getElementById('langButton');
     const langDropdown = document.getElementById('langDropdown');
-    const langArrow = document.getElementById('langArrow');
     const langWrapper = document.getElementById('langWrapper');
 
     // 渲染语言
@@ -493,24 +482,26 @@
       });
     }
 
-    // 渲染传送门 — 完整显示链接，不截断
+    // 渲染传送门 —— 标签在上方，链接在下方
     function renderPortalItems(items) {
       portalList.innerHTML = '';
       items.forEach(item => {
         const li = document.createElement('li');
         li.className = 'portal-item';
         
-        const labelSpan = document.createElement('span');
-        labelSpan.className = 'portal-label';
-        labelSpan.textContent = item.label;
+        // 标签行
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'portal-label';
+        labelDiv.textContent = item.label;
         
-        const valueDiv = document.createElement('div');
-        valueDiv.className = 'portal-value';
+        // 链接/值行 (包含文本和复制按钮)
+        const valueRow = document.createElement('div');
+        valueRow.className = 'portal-value-row';
         
         const valueSpan = document.createElement('span');
-        // 完整显示值，不截断
+        valueSpan.className = 'portal-value-text';
         valueSpan.textContent = item.value;
-        valueSpan.title = item.value; // 悬停依然可看完整
+        valueSpan.title = item.value;
         
         const copyBtn = document.createElement('button');
         copyBtn.className = 'copy-btn';
@@ -528,11 +519,11 @@
           }
         });
         
-        valueDiv.appendChild(valueSpan);
-        valueDiv.appendChild(copyBtn);
+        valueRow.appendChild(valueSpan);
+        valueRow.appendChild(copyBtn);
         
-        li.appendChild(labelSpan);
-        li.appendChild(valueDiv);
+        li.appendChild(labelDiv);
+        li.appendChild(valueRow);
         portalList.appendChild(li);
       });
     }
