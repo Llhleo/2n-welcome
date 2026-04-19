@@ -1,0 +1,18 @@
+{
+  "guildTitle": "Welcome guys to join the guild [2n]",
+  "langDisplay": "English",
+  "leader1": "Leader",
+  "leader2": "Vice Leader",
+  "quickStartTitle": "Quick Start",
+  "portalTitle": "Quick Links",
+  "quickHtml": "<p>The guild has a WPS Cloud Document for recording member information, along with other features. <a href=\"https://www.kdocs.cn/l/cvM5Vz8Fd3dC\" target=\"_blank\">Click here to access it</a>.</p><p>We have achieved automatic calculation of TP points through tiering, automatic counting of owned Super petals, cell member addition permissions (requiring the addition of flowerwsr as a <a href=\"https://kdocs.cn/i/MfxUDULv\" target=\"_blank\">contact</a> in WPS), and even automatic leaderboard updates.</p><p>Although the <a href=\"https://v.wjx.cn/vm/tJTix5n.aspx#\" target=\"_blank\">Mark List</a> is not commonly used, it does not mean we lack it—it's a matter of whether the guild's prestige is significant.</p><p>Several quick links were also inserted into the table cells, such as <a href=\"https://storm-let.github.io/florr-dps/\" target=\"_blank\">DPS calculation</a> and viewing the Surviving <a href=\"https://mobs.ashish.top\" target=\"_blank\">Super</a> creatures.</p><p>Add the guild leader's WeChat: Zjk-1332 (Available during weekends) To quickly join the guild group chat!</p>",
+  "portalItems": [
+    { "label": "Leader WeChat:", "value": "Zjk-1332" },
+    { "label": "Guild Sheet:", "value": "https://www.kdocs.cn/l/cvM5Vz8Fd3dC" },
+    { "label": "Add WPS Contact:", "value": "https://kdocs.cn/i/MfxUDULv" },
+    { "label": "Mark List Report:", "value": "https://v.wjx.cn/vm/tJTix5n.aspx#" },
+    { "label": "Official wiki:", "value": "https://official-florrio.fandom.com/wiki/Florr.io_Community_Wiki" },
+    { "label": "DPS Calc:", "value": "https://storm-let.github.io/florr-dps/" },
+    { "label": "Super Mobs:", "value": "https://mobs.ashish.top" }
+  ]
+}
