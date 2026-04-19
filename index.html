@@ -233,10 +233,10 @@
       list-style: none;
     }
 
-    /* 修改：标签在上，链接/值在下 */
+    /* 标签在上，链接/值在下 */
     .portal-item {
       display: flex;
-      flex-direction: column;   /* 垂直排列 */
+      flex-direction: column;
       margin-bottom: 24px;
     }
 
@@ -410,7 +410,7 @@
         quickHtml: `
           <p>公会有一个WPS云文档，用于统计各成员的信息，当然还有其他功能，<a href="https://www.kdocs.cn/l/cvM5Vz8Fd3dC" target="_blank">点击这里进入</a>。</p>
           <p>我们实现了通过等级计算TP点数、填写拥有的Super花瓣自动计数、单元格添加成员权限（需在WPS中添加flowerwsr为<a href="https://kdocs.cn/i/MfxUDULv" target="_blank">联系人</a>），甚至还有排行榜的自动更新。</p>
-          <p>Mark List虽然并不常用，但不代表我们没有，这是公会排面大不大的问题。</p>
+          <p><a href="https://v.wjx.cn/vm/tJTix5n.aspx#" target="_blank">Mark List</a>虽然并不常用，但不代表我们没有，这是公会排面大不大的问题。</p>
           <p>表格单元格中还插入了几个快速链接，例如<a href="https://storm-let.github.io/florr-dps/" target="_blank">DPS</a>的计算和存活<a href="https://mobs.ashish.top" target="_blank">Super</a>生物的查看。</p>
           <p>添加会长微信：Zjk-1332（周末有空） 快速拉入公会群聊！</p>
         `,
@@ -418,6 +418,8 @@
           { label: '会长微信号：', value: 'Zjk-1332', type: 'text' },
           { label: '公会表格：', value: 'https://www.kdocs.cn/l/cvM5Vz8Fd3dC', type: 'link' },
           { label: '添加 WPS联系人：', value: 'https://kdocs.cn/i/MfxUDULv', type: 'link' },
+          { label: 'Mark List上报：', value: 'https://v.wjx.cn/vm/tJTix5n.aspx#', type: 'link' },
+          { label: '中文wiki：', value: 'https://florrio.fandom.com/zh/wiki/%E9%A6%96%E9%A1%B5', type: 'link' },
           { label: 'DPS计算：', value: 'https://storm-let.github.io/florr-dps/', type: 'link' },
           { label: 'Super生物：', value: 'https://mobs.ashish.top', type: 'link' }
         ]
@@ -432,7 +434,7 @@
         quickHtml: `
           <p>The guild has a WPS Cloud Document for recording member information, along with other features. <a href="https://www.kdocs.cn/l/cvM5Vz8Fd3dC" target="_blank">Click here to access it</a>.</p>
           <p>We have achieved automatic calculation of TP points through tiering, automatic counting of owned Super petals, cell member addition permissions (requiring the addition of flowerwsr as a <a href="https://kdocs.cn/i/MfxUDULv" target="_blank">contact</a> in WPS), and even automatic leaderboard updates.</p>
-          <p>Although the Mark List is not commonly used, it does not mean we lack it—it's a matter of whether the guild's prestige is significant.</p>
+          <p>Although the <a href="https://v.wjx.cn/vm/tJTix5n.aspx#" target="_blank">Mark List</a> is not commonly used, it does not mean we lack it—it's a matter of whether the guild's prestige is significant.</p>
           <p>Several quick links were also inserted into the table cells, such as <a href="https://storm-let.github.io/florr-dps/" target="_blank">DPS calculation</a> and viewing the Surviving <a href="https://mobs.ashish.top" target="_blank">Super</a> creatures.</p>
           <p>Add the guild leader's WeChat: Zjk-1332 (Available during weekends) To quickly join the guild group chat!</p>
         `,
@@ -440,6 +442,8 @@
           { label: 'Leader WeChat:', value: 'Zjk-1332', type: 'text' },
           { label: 'Guild Sheet:', value: 'https://www.kdocs.cn/l/cvM5Vz8Fd3dC', type: 'link' },
           { label: 'Add WPS Contact:', value: 'https://kdocs.cn/i/MfxUDULv', type: 'link' },
+          { label: 'Mark List Report:', value: 'https://v.wjx.cn/vm/tJTix5n.aspx#', type: 'link' },
+          { label: 'Official wiki:', value: 'https://official-florrio.fandom.com/wiki/Florr.io_Community_Wiki', type: 'link' },
           { label: 'DPS Calc:', value: 'https://storm-let.github.io/florr-dps/', type: 'link' },
           { label: 'Super Mobs:', value: 'https://mobs.ashish.top', type: 'link' }
         ]
@@ -482,19 +486,17 @@
       });
     }
 
-    // 渲染传送门 —— 标签在上方，链接在下方
+    // 渲染传送门
     function renderPortalItems(items) {
       portalList.innerHTML = '';
       items.forEach(item => {
         const li = document.createElement('li');
         li.className = 'portal-item';
         
-        // 标签行
         const labelDiv = document.createElement('div');
         labelDiv.className = 'portal-label';
         labelDiv.textContent = item.label;
         
-        // 链接/值行 (包含文本和复制按钮)
         const valueRow = document.createElement('div');
         valueRow.className = 'portal-value-row';
         
