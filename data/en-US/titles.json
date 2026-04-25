@@ -6,5 +6,7 @@
   "quickStartTitle": "Quick Start",
   "portalTitle": "Quick Links",
   "infoTitle": "News",
-  "changeLogTitle": "Change Logs"
+  "changeLogTitle": "Change Logs",
+  "changelogExpand": "Show All",
+  "changelogCollapse": "Collapse"
 }
