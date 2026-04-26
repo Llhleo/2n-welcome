@@ -8,5 +8,8 @@
   "infoTitle": "News",
   "changeLogTitle": "Change Logs",
   "changelogExpand": "Show All",
-  "changelogCollapse": "Collapse"
+  "changelogCollapse": "Collapse",
+  "announcementTitle": "Announcement",
+  "announcementMore": "View More History",
+  "announcementMoreArrow": "→"
 }

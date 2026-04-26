@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>历史通知</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f5f7fa;
+      color: #1e2b3c;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+      min-height: 100vh;
+    }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: 1px solid #cfdde9;
+      border-radius: 30px;
+      padding: 8px 22px;
+      cursor: pointer;
+      font-size: 1rem;
+      color: #1e3b4f;
+      margin-bottom: 24px;
+      transition: 0.15s;
+      text-decoration: none;
+    }
+    .back-btn:hover { background: #e6f0f9; }
+    .notice-item {
+      border-bottom: 1px dashed #cbd5e1;
+      padding-bottom: 20px;
+      margin-bottom: 20px;
+    }
+    .notice-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+    .loading-placeholder {
+      color: #6a859c;
+      text-align: center;
+      padding: 40px;
+    }
+
+    /* 深色模式自动适配 */
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: #0f172a;
+        color: #e2e8f0;
+      }
+      .back-btn {
+        color: #cbd5e1;
+        border-color: #475569;
+      }
+      .back-btn:hover { background: #334155; }
+      .notice-item {
+        border-bottom-color: #475569;
+      }
+      .loading-placeholder { color: #94a3b8; }
+    }
+  </style>
+</head>
+<body>
+  <!-- 返回按钮，携带原语言参数 -->
+  <a href="index.html" class="back-btn" id="backButton">
+    <i class="fas fa-arrow-left"></i> <span id="backText">返回</span>
+  </a>
+
+  <div id="allNoticeContainer"><div class="loading-placeholder">加载中...</div></div>
+
+  <script type="module">
+    import { decodeRichText } from './decode.js';
+
+    // 从 URL 获取语言，默认为 zh
+    const urlParams = new URLSearchParams(window.location.search);
+    const lang = urlParams.get('lang') || 'zh';
+    document.documentElement.lang = lang === 'en' ? 'en' : 'zh';
+
+    // 返回按钮文字适配
+    const backTextEl = document.getElementById('backText');
+    if (backTextEl) backTextEl.textContent = lang === 'zh' ? '返回' : 'Back';
+
+    // 工具函数
+    function escapeHTML(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    /**
+     * 从 "左侧|右侧" 字符串中提取对应语言文本
+     */
+    function getLocalizedString(raw, language) {
+      if (!raw || typeof raw !== 'string') return '';
+      if (!raw.includes('|')) return raw.trim();
+      const parts = raw.split('|');
+      const left = (parts[0] || '').trim();
+      const right = (parts[1] || '').trim();
+      if (language === 'zh') {
+        return left || right;
+      } else {
+        return right || left;
+      }
+    }
+
+    /**
+     * 文件名转可读时间
+     */
+    function formatTime(filename, language) {
+      if (!filename) return '';
+      const match = filename.match(/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})/);
+      if (!match) return filename;
+      const [, year, month, day, hour, minute] = match;
+      if (language === 'zh') {
+        return `${year}.${month}.${day} ${hour}:${minute}`;
+      } else {
+        const months = ['January','February','March','April','May','June','July',
+                        'August','September','October','November','December'];
+        const monStr = months[parseInt(month,10)-1] || month;
+        const dayNum = parseInt(day,10);
+        let suffix = 'th';
+        if (dayNum === 1 || dayNum === 21 || dayNum === 31) suffix = 'st';
+        else if (dayNum === 2 || dayNum === 22) suffix = 'nd';
+        else if (dayNum === 3 || dayNum === 23) suffix = 'rd';
+        return `${monStr} ${dayNum}${suffix}, ${year} ${hour}:${minute}`;
+      }
+    }
+
+    /**
+     * 渲染单条通知
+     */
+    function renderNoticeFull(notice, filename) {
+      const tag = notice.tag || '';
+      let titleColor = '#1e3b4f';
+      if (tag.toLowerCase() === 'important') titleColor = '#de1f1f';
+      else if (tag.toLowerCase() === 'joke') titleColor = '#f59e0b';
+
+      const titleText = getLocalizedString(notice.title, lang);
+      const content = lang === 'zh' ? (notice.zh || '') : (notice.en || notice.zh || '');
+      const decodedContent = decodeRichText(content, 14);
+
+      const timeStr = formatTime(filename, lang);
+      const writer = notice.writer || '';
+      const tagDisplay = tag ? `[${tag}]` : '';
+
+      return `
+        <div class="notice-item">
+          <h3 style="color:${titleColor}; text-align:center; margin:0 0 6px;">${escapeHTML(titleText)}</h3>
+          <div style="font-size:0.85rem; color:${titleColor}; margin-bottom:8px; text-align:center;">${tagDisplay}</div>
+          <p style="text-indent:2em; margin:0 0 10px; line-height:1.7;">${decodedContent}</p>
+          <div style="text-align:right; font-size:0.9rem; color:inherit;">${escapeHTML(writer)}</div>
+          <div style="text-align:right; font-size:0.8rem; color:#6a859c;">${timeStr}</div>
+        </div>
+      `;
+    }
+
+    // 加载全部通知
+    async function loadAllNotices() {
+      const container = document.getElementById('allNoticeContainer');
+      try {
+        const indexRes = await fetch('./data/Announcement/index.json');
+        if (!indexRes.ok) throw new Error('索引加载失败');
+        const fileList = await indexRes.json(); // 假定已按时间升序排列
+
+        if (!fileList.length) {
+          container.innerHTML = '<div class="loading-placeholder">暂无通知</div>';
+          return;
+        }
+
+        let html = '';
+        for (const file of fileList) {
+          const res = await fetch(`./data/Announcement/${file}`);
+          if (!res.ok) continue;
+          const notice = await res.json();
+          html += renderNoticeFull(notice, file);
+        }
+        container.innerHTML = html || '<div class="loading-placeholder">暂无通知</div>';
+      } catch (e) {
+        container.innerHTML = '<div class="loading-placeholder">通知加载失败</div>';
+        console.error(e);
+      }
+    }
+
+    loadAllNotices();
+  </script>
+</body>
+</html>
