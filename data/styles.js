@@ -472,6 +472,68 @@ export const lightStyles = `
     background: #e6f0f9;
   }
 
+  /* 通知区域浅色样式 */
+  .notice-item {
+    border-bottom: 1px dashed #cbd5e1;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+  }
+
+  .notice-title {
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+
+  .notice-title-normal {
+    color: #1e2b3c;
+  }
+
+  .notice-title-important {
+    color: #dc2626;
+  }
+
+  .notice-title-joke {
+    color: #eab308;
+  }
+
+  .notice-title-center {
+    text-align: center;
+  }
+
+  .notice-tag {
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+  }
+  
+  .notice-tag.notice-title-important {
+    color: #dc2626;
+  }
+  
+  .notice-tag.notice-title-joke {
+    color: #eab308;
+  }
+
+  .notice-body {
+    text-indent: 2em;
+    margin: 0 0 8px;
+    line-height: 1.6;
+  }
+
+  .notice-writer {
+    text-align: right;
+    font-size: 0.85rem;
+  }
+
+  .notice-time {
+    text-align: right;
+    font-size: 0.8rem;
+    color: #6a859c;
+  }
+
+  .announce-more .changelog-toggle {
+    margin-top: 12px;
+  }
+
   @media (max-width: 680px) {
     .page { padding: 18px 16px 20px; }
     .desktop-layout { flex-direction: column; }
@@ -919,7 +981,7 @@ export const darkStyles = `
     padding: 20px;
   }
 
-  /* 更新日志深色模式 */
+  /* 更新日志深色 */
   .changelog-list {
     list-style: none;
   }
@@ -955,6 +1017,72 @@ export const darkStyles = `
 
   .changelog-toggle:hover {
     background: #334155;
+  }
+
+  /* 通知深色适配 */
+  .notice-item {
+    border-bottom: 1px dashed #475569;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+  }
+
+  .notice-title {
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+
+  .notice-title-normal {
+    color: #f1f5f9;
+  }
+
+  .notice-title-important {
+    color: #ef4444;
+  }
+
+  .notice-title-joke {
+    color: #facc15;
+  }
+
+  .notice-title-center {
+    text-align: center;
+  }
+
+  .notice-tag {
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+    opacity: 0.9;
+  }
+  
+  .notice-tag.notice-title-important {
+    color: #ef4444;
+  }
+  
+  .notice-tag.notice-title-joke {
+    color: #facc15;
+  }
+
+  .notice-body {
+    text-indent: 2em;
+    margin: 0 0 8px;
+    line-height: 1.6;
+    color: #cbd5e1;
+  }
+
+  .notice-writer {
+    text-align: right;
+    font-size: 0.85rem;
+    color: #cbd5e1;
+  }
+
+  .notice-time {
+    text-align: right;
+    font-size: 0.8rem;
+    color: #94a3b8;
+  }
+
+  .announce-more .changelog-toggle {
+    color: #cbd5e1;
+    border-color: #475569;
   }
 
   @media (max-width: 680px) {

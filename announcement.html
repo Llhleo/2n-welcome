@@ -46,27 +46,16 @@
       text-align: center;
       padding: 40px;
     }
-
-    /* 深色模式自动适配 */
     @media (prefers-color-scheme: dark) {
-      body {
-        background: #0f172a;
-        color: #e2e8f0;
-      }
-      .back-btn {
-        color: #cbd5e1;
-        border-color: #475569;
-      }
+      body { background: #0f172a; color: #e2e8f0; }
+      .back-btn { color: #cbd5e1; border-color: #475569; }
       .back-btn:hover { background: #334155; }
-      .notice-item {
-        border-bottom-color: #475569;
-      }
+      .notice-item { border-bottom-color: #475569; }
       .loading-placeholder { color: #94a3b8; }
     }
   </style>
 </head>
 <body>
-  <!-- 返回按钮，携带原语言参数 -->
   <a href="index.html" class="back-btn" id="backButton">
     <i class="fas fa-arrow-left"></i> <span id="backText">返回</span>
   </a>
@@ -74,41 +63,37 @@
   <div id="allNoticeContainer"><div class="loading-placeholder">加载中...</div></div>
 
   <script type="module">
-    import { decodeRichText } from './decode.js';
+    import { decodeRichText } from './main/decode.js';
+    import * as pipe from './main/pipe.js';
 
-    // 从 URL 获取语言，默认为 zh
-    const urlParams = new URLSearchParams(window.location.search);
-    const lang = urlParams.get('lang') || 'zh';
+    // 语言获取（优先 URL 参数，其次 localStorage，最后浏览器）
+    const lang = pipe.getUrlParam('lang') || pipe.getLanguage();
     document.documentElement.lang = lang === 'en' ? 'en' : 'zh';
 
-    // 返回按钮文字适配
+    // 返回按钮文字
     const backTextEl = document.getElementById('backText');
     if (backTextEl) backTextEl.textContent = lang === 'zh' ? '返回' : 'Back';
+    // 返回链接保持 index.html 并携带当前语言和模式
+    const backBtn = document.getElementById('backButton');
+    backBtn.href = pipe.navigate ? '#' : 'index.html'; // 用 JS 处理跳转
+    backBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      pipe.navigate('index.html');
+    });
 
-    // 工具函数
     function escapeHTML(str) {
       return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
-    /**
-     * 从 "左侧|右侧" 字符串中提取对应语言文本
-     */
     function getLocalizedString(raw, language) {
       if (!raw || typeof raw !== 'string') return '';
       if (!raw.includes('|')) return raw.trim();
       const parts = raw.split('|');
       const left = (parts[0] || '').trim();
       const right = (parts[1] || '').trim();
-      if (language === 'zh') {
-        return left || right;
-      } else {
-        return right || left;
-      }
+      return language === 'zh' ? (left || right) : (right || left);
     }
 
-    /**
-     * 文件名转可读时间
-     */
     function formatTime(filename, language) {
       if (!filename) return '';
       const match = filename.match(/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})/);
@@ -129,9 +114,6 @@
       }
     }
 
-    /**
-     * 渲染单条通知
-     */
     function renderNoticeFull(notice, filename) {
       const tag = notice.tag || '';
       let titleColor = '#1e3b4f';
@@ -157,13 +139,12 @@
       `;
     }
 
-    // 加载全部通知
     async function loadAllNotices() {
       const container = document.getElementById('allNoticeContainer');
       try {
         const indexRes = await fetch('./data/Announcement/index.json');
         if (!indexRes.ok) throw new Error('索引加载失败');
-        const fileList = await indexRes.json(); // 假定已按时间升序排列
+        const fileList = await indexRes.json();
 
         if (!fileList.length) {
           container.innerHTML = '<div class="loading-placeholder">暂无通知</div>';
