@@ -112,3 +112,15 @@ body {
   background: #2563eb;
   color: white;
 }
+
+/* 设置菜单 */
+.settings-dropdown,
+.settings-submenu {
+  background: #1e293b;
+}
+.settings-option {
+  color: #cbd5e1;
+}
+.settings-option:hover {
+  background: #334155;
+}

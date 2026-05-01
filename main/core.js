@@ -1,12 +1,15 @@
-// main/core.js – 主逻辑（无 JS 样式注入）
+// main/core.js – 主逻辑（适配设置面板、语言事件、主题切换）
 import * as pipe from './pipe.js';
 import { decodeRichText } from './decode.js';
 import { checkForUpdate } from './checkUpdate.js';
 import { loadAnnouncements } from '../data/announcement.js';
 
-// 主题切换改为 <link> 标签
+// 主题切换（支持手动模式）
 function applyTheme() {
-  const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const mode = pipe.getColorMode();
+  let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (mode === 'light') isDark = false;
+  else if (mode === 'dark') isDark = true;
   const themeLink = document.getElementById('theme-link');
   if (themeLink) {
     themeLink.href = isDark ? './main/theme-dark.css' : './main/theme-light.css';
@@ -15,13 +18,13 @@ function applyTheme() {
 applyTheme();
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
 
+// 语言配置
 const LANG_FOLDER = { zh: 'zh-CN', en: 'en-US' };
 const langCache = {};
 let currentLang = pipe.getLanguage();
 
-// DOM 引用（保持不变）
+// DOM 引用
 const guildTitleEl = document.getElementById('guildTitle');
-const langDisplaySpan = document.getElementById('langDisplay');
 const leaderLabel1 = document.getElementById('leaderLabel1');
 const leaderLabel2 = document.getElementById('leaderLabel2');
 const quickStartTitleEl = document.getElementById('quickStartTitle');
@@ -29,11 +32,8 @@ const portalTitleEl = document.getElementById('portalTitle');
 const infoTitleEl = document.getElementById('infoTitle');
 const quickstartContent = document.getElementById('quickstartContent');
 const portalList = document.getElementById('portalList');
-const langBtn = document.getElementById('langButton');
-const langDropdown = document.getElementById('langDropdown');
-const langWrapper = document.getElementById('langWrapper');
 
-// 语言加载（路径修正为 ./data/）
+// 语言加载
 async function loadLanguage(langCode) {
   const folder = LANG_FOLDER[langCode];
   if (!folder) return null;
@@ -55,16 +55,17 @@ async function loadLanguage(langCode) {
   } catch (e) { console.error(e); return null; }
 }
 
+// 渲染界面
 function renderWithData(data) {
   if (!data) return;
   guildTitleEl.textContent = data.guildTitle;
-  langDisplaySpan.textContent = data.langDisplay;
   leaderLabel1.textContent = data.leader1;
   leaderLabel2.textContent = data.leader2;
   quickStartTitleEl.textContent = data.quickStartTitle;
   portalTitleEl.textContent = data.portalTitle;
   infoTitleEl.textContent = data.infoTitle || '资讯';
 
+  // 设置标题
   const announceTitle = data.announcementTitle || (currentLang === 'zh' ? '通知' : 'Announcement');
   document.getElementById('announceTitleDesktop').textContent = announceTitle;
   document.getElementById('announceTitleMobile').textContent = announceTitle;
@@ -75,9 +76,6 @@ function renderWithData(data) {
 
   quickstartContent.innerHTML = decodeRichText(data.quickHtml, 16);
   renderPortalItems(data.portalItems);
-  document.querySelectorAll('.lang-option').forEach(opt => {
-    opt.classList.toggle('selected', opt.dataset.lang === currentLang);
-  });
 }
 
 function renderPortalItems(items) {
@@ -128,31 +126,22 @@ function showToast(msg) {
   toastTimer = setTimeout(() => toast.style.opacity = '0', 1500);
 }
 
-async function switchLanguage(langCode) {
-  if (langCode === currentLang) { closeDropdown(); return; }
-  const data = await loadLanguage(langCode);
-  if (data) {
-    currentLang = langCode;
-    pipe.setLanguage(langCode);
-    renderWithData(data);
-    document.documentElement.lang = langCode === 'zh' ? 'zh' : 'en';
-    loadAnnouncementsWrapper();
-    loadChangelog();
+// 监听设置面板发出的语言变化事件
+window.addEventListener('languageChanged', (e) => {
+  const newLang = e.detail.lang;
+  if (newLang !== currentLang) {
+    currentLang = newLang;
+    loadLanguage(newLang).then(data => {
+      if (data) {
+        renderWithData(data);
+        loadAnnouncementsWrapper();
+        loadChangelog();
+      }
+    });
   }
-  closeDropdown();
-}
-
-function openDropdown() { langDropdown.classList.add('show'); langBtn.classList.add('active'); }
-function closeDropdown() { langDropdown.classList.remove('show'); langBtn.classList.remove('active'); }
-
-langBtn.addEventListener('click', (e) => { e.stopPropagation(); langDropdown.classList.contains('show') ? closeDropdown() : openDropdown(); });
-document.querySelectorAll('.lang-option').forEach(opt => {
-  opt.addEventListener('click', (e) => { e.stopPropagation(); switchLanguage(opt.dataset.lang); });
 });
-document.addEventListener('click', (e) => { if (!langWrapper.contains(e.target)) closeDropdown(); });
-langDropdown.addEventListener('click', (e) => e.stopPropagation());
 
-// 资讯加载
+// 资讯
 async function loadBilibiliManual() {
   const container = document.getElementById('bilibiliFeed');
   try {
@@ -252,7 +241,7 @@ function renderChangelog(versions, container, expandText, collapseText) {
   container.appendChild(btn);
 }
 
-// 通知
+// 通知加载
 async function loadAnnouncementsWrapper() {
   const langData = langCache[currentLang] || {};
   const moreText = langData.announcementMore || (currentLang === 'zh' ? '查看更多历史通知' : 'View More History');
@@ -262,7 +251,7 @@ async function loadAnnouncementsWrapper() {
   }
 }
 
-// 启动
+// 初始化
 async function init() {
   loadLanguage('en').catch(() => {});
   const data = await loadLanguage('zh');
