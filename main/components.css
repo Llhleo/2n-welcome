@@ -37,40 +37,6 @@ body {
   margin-right: 16px;
 }
 
-/* 语言切换（旧版，保留以防引用） */
-.lang-wrapper { position: relative; user-select: none; }
-.lang-btn {
-  border-radius: 40px;
-  padding: 10px 18px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.15s;
-  backdrop-filter: blur(4px);
-}
-.lang-btn i { font-size: 1rem; transition: transform 0.2s; }
-.lang-btn.active i { transform: rotate(180deg); }
-.lang-dropdown {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  border-radius: 24px;
-  overflow: hidden;
-  min-width: 140px;
-  z-index: 100;
-  display: none;
-}
-.lang-dropdown.show { display: block; }
-.lang-option {
-  padding: 12px 20px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background 0.1s;
-}
-
 /* 用户区域与设置菜单 */
 #userAreaContainer {
   position: relative;
@@ -134,7 +100,6 @@ body {
 .settings-dropdown {
   position: absolute;
   top: 40px;
-  right: 0;
   background: var(--bg-dropdown, #fff);
   border-radius: 12px;
   box-shadow: 0 8px 20px rgba(0,0,0,0.15);
@@ -143,7 +108,7 @@ body {
   overflow: hidden;
 }
 
-/* 子菜单（默认向左弹出） */
+/* 子菜单（位置由 JS 动态控制，移除固定 right/left） */
 .settings-submenu {
   position: absolute;
   background: var(--bg-dropdown, #fff);
@@ -152,19 +117,6 @@ body {
   min-width: 160px;
   z-index: 210;
   overflow: hidden;
-  top: 0;
-  right: 100%;
-  margin-right: 4px;
-}
-
-/* 防止子菜单超出左侧屏幕（窄屏时改为向右弹出） */
-@media (max-width: 500px) {
-  .settings-submenu {
-    right: auto;
-    left: 100%;
-    margin-left: 4px;
-    margin-right: 0;
-  }
 }
 
 /* 菜单选项 */
@@ -184,6 +136,40 @@ body {
 .settings-option i {
   font-size: 0.8rem;
   margin-right: 4px;
+}
+
+/* 旧版语言切换（保留以防引用） */
+.lang-wrapper { position: relative; user-select: none; }
+.lang-btn {
+  border-radius: 40px;
+  padding: 10px 18px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s;
+  backdrop-filter: blur(4px);
+}
+.lang-btn i { font-size: 1rem; transition: transform 0.2s; }
+.lang-btn.active i { transform: rotate(180deg); }
+.lang-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  border-radius: 24px;
+  overflow: hidden;
+  min-width: 140px;
+  z-index: 100;
+  display: none;
+}
+.lang-dropdown.show { display: block; }
+.lang-option {
+  padding: 12px 20px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.1s;
 }
 
 /* 会长/副会长 */
@@ -463,11 +449,12 @@ body {
     margin-right: 0;
   }
   
-  /* 用户区域独占一行并右对齐 */
+  /* 用户区域独占一行，靠右对齐 */
   .user-area {
-    align-self: flex-end;
-    width: 100%;
-    justify-content: flex-end;
+    align-self: flex-end !important;
+    width: auto !important;
+    justify-content: flex-end !important;
+    margin-left: auto;
   }
   
   .desktop-layout { flex-direction: column; }
