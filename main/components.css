@@ -37,7 +37,102 @@ body {
   margin-right: 16px;
 }
 
-.lang-wrapper { position: relative; user-select: none; }
+/* 用户区域与设置 */
+.user-area {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  position: relative;
+}
+
+.settings-icon {
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: inherit;
+  transition: transform 0.2s;
+  order: 3;
+}
+.settings-icon:hover {
+  transform: rotate(30deg);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  order: 2;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.user-avatar-placeholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #2bffa3;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.user-name {
+  font-weight: 500;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+/* 下拉菜单 */
+.settings-dropdown,
+.settings-submenu {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  background: var(--bg-dropdown, #fff);
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  min-width: 160px;
+  z-index: 200;
+  overflow: hidden;
+}
+
+.settings-submenu {
+  top: 0;
+  right: 100%;
+  margin-right: 4px;
+}
+
+.settings-option {
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.1s;
+  white-space: nowrap;
+}
+
+.settings-option:hover {
+  background: var(--hover-bg, #f0f4f8);
+}
+
+.settings-option i {
+  font-size: 0.8rem;
+  margin-right: 4px;
+}
+
+.lang-wrapper { position: relative; user-select: none; }  /* 保留以防旧版，但实际已移除 */
 .lang-btn {
   border-radius: 40px;
   padding: 10px 18px;
@@ -262,7 +357,7 @@ body {
 .notice-title {
   font-weight: bold;
   margin-bottom: 4px;
-  text-align: center;       /* 新增：标题默认居中 */
+  text-align: center;
 }
 .notice-title-center {
   text-align: center;
@@ -270,7 +365,7 @@ body {
 .notice-tag {
   font-size: 0.8rem;
   margin-bottom: 4px;
-  text-align: center;       /* 新增：标签默认居中 */
+  text-align: center;
 }
 .notice-body {
   text-indent: 2em;
@@ -280,10 +375,6 @@ body {
 .notice-writer { text-align: right; font-size: 0.85rem; }
 .notice-time { text-align: right; font-size: 0.8rem; }
 .announce-more { text-align: right; margin-top: 12px; }
-
-/* 桌面/移动切换 */
-.card-desktop { display: block; }
-.card-mobile { display: none; }
 
 /* 更新提示弹窗（结构） */
 .update-overlay {
@@ -324,6 +415,10 @@ body {
   color: white;
 }
 
+/* 桌面/移动切换 */
+.card-desktop { display: block; }
+.card-mobile { display: none; }
+
 /* 响应式 */
 @media (max-width: 680px) {
   .page { padding: 18px 16px 20px; }
@@ -334,93 +429,14 @@ body {
   .info-section { order: 2; }
   .right-column { order: 3; }
   .video-card { flex: 0 0 160px; }
-  
-  .card-desktop { display: none; }
-  .card-mobile { display: block; }
-}
 
-/* 用户区域与设置菜单 */
-.user-area {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  position: relative;
-}
-.settings-icon {
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: inherit;
-  transition: transform 0.2s;
-}
-.settings-icon:hover { transform: rotate(30deg); }
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.user-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid white;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-}
-.user-avatar-placeholder {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #2bffa3;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 1.2rem;
-}
-.user-name {
-  font-weight: 500;
-  font-size: 1rem;
-}
-.settings-dropdown,
-.settings-submenu {
-  position: absolute;
-  top: 40px;
-  right: 0;
-  background: var(--bg-dropdown, #fff);
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-  min-width: 180px;
-  z-index: 200;
-  overflow: hidden;
-}
-.settings-submenu {
-  top: 0;
-  right: 100%;
-  margin-right: 4px;
-}
-.settings-option {
-  padding: 12px 16px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: background 0.1s;
-}
-.settings-option:hover {
-  background: var(--hover-bg, #f0f4f8);
-}
-.settings-option i {
-  font-size: 0.8rem;
-}
-
-/* 手机端调整：移至标题下方 */
-@media (max-width: 680px) {
+  /* 手机端设置区域 */
   .user-area {
-    order: 2;
+    margin-top: 8px;
     width: 100%;
     justify-content: flex-end;
-    margin-top: 12px;
   }
+
+  .card-desktop { display: none; }
+  .card-mobile { display: block; }
 }

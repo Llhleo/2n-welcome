@@ -13,6 +13,7 @@ body {
   background-clip: text;
   color: transparent;
 }
+
 .lang-btn {
   background: rgba(30,41,59,0.8);
   border: 1px solid #334155;
@@ -98,6 +99,11 @@ body {
   color: #cbd5e1;
 }
 
+/* 设置菜单 */
+.settings-dropdown, .settings-submenu { background: #1e293b; }
+.settings-option { color: #cbd5e1; }
+.settings-option:hover { background: #334155; }
+
 /* 更新弹窗 */
 .update-dialog {
   background: #1e293b;
@@ -111,16 +117,4 @@ body {
 .update-btn.confirm {
   background: #2563eb;
   color: white;
-}
-
-/* 设置菜单 */
-.settings-dropdown,
-.settings-submenu {
-  background: #1e293b;
-}
-.settings-option {
-  color: #cbd5e1;
-}
-.settings-option:hover {
-  background: #334155;
 }

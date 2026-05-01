@@ -1,10 +1,9 @@
-// main/core.js – 主逻辑（适配设置面板、语言事件、主题切换）
+// main/core.js – 主逻辑（纯净版，无多余按钮绑定）
 import * as pipe from './pipe.js';
 import { decodeRichText } from './decode.js';
 import { checkForUpdate } from './checkUpdate.js';
 import { loadAnnouncements } from '../data/announcement.js';
 
-// 主题切换（支持手动模式）
 function applyTheme() {
   const mode = pipe.getColorMode();
   let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -18,12 +17,11 @@ function applyTheme() {
 applyTheme();
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
 
-// 语言配置
 const LANG_FOLDER = { zh: 'zh-CN', en: 'en-US' };
 const langCache = {};
 let currentLang = pipe.getLanguage();
 
-// DOM 引用
+// DOM 引用（仅保留必须的）
 const guildTitleEl = document.getElementById('guildTitle');
 const leaderLabel1 = document.getElementById('leaderLabel1');
 const leaderLabel2 = document.getElementById('leaderLabel2');
@@ -33,7 +31,6 @@ const infoTitleEl = document.getElementById('infoTitle');
 const quickstartContent = document.getElementById('quickstartContent');
 const portalList = document.getElementById('portalList');
 
-// 语言加载
 async function loadLanguage(langCode) {
   const folder = LANG_FOLDER[langCode];
   if (!folder) return null;
@@ -45,7 +42,7 @@ async function loadLanguage(langCode) {
       fetch(baseUrl + 'start.json'),
       fetch(baseUrl + 'links.json')
     ]);
-    if (!titlesRes.ok || !startRes.ok || !linksRes.ok) throw new Error('Language files missing');
+    if (!titlesRes.ok || !startRes.ok || !linksRes.ok) throw new Error('Missing');
     const titles = await titlesRes.json();
     const start = await startRes.json();
     const links = await linksRes.json();
@@ -55,7 +52,6 @@ async function loadLanguage(langCode) {
   } catch (e) { console.error(e); return null; }
 }
 
-// 渲染界面
 function renderWithData(data) {
   if (!data) return;
   guildTitleEl.textContent = data.guildTitle;
@@ -65,7 +61,6 @@ function renderWithData(data) {
   portalTitleEl.textContent = data.portalTitle;
   infoTitleEl.textContent = data.infoTitle || '资讯';
 
-  // 设置标题
   const announceTitle = data.announcementTitle || (currentLang === 'zh' ? '通知' : 'Announcement');
   document.getElementById('announceTitleDesktop').textContent = announceTitle;
   document.getElementById('announceTitleMobile').textContent = announceTitle;
@@ -94,11 +89,11 @@ function renderPortalItems(items) {
     const copyBtn = document.createElement('button');
     copyBtn.className = 'copy-btn';
     copyBtn.innerHTML = '<i class="far fa-copy"></i>';
-    copyBtn.addEventListener('click', (e) => {
+    copyBtn.onclick = (e) => {
       e.stopPropagation();
       const raw = item.value.replace(/<[^>]*>/g, '');
       navigator.clipboard?.writeText(raw).then(() => showToast('已复制')).catch(() => fallbackCopy(raw));
-    });
+    };
     valueRow.appendChild(valueSpan);
     valueRow.appendChild(copyBtn);
     li.appendChild(labelDiv);
@@ -126,7 +121,6 @@ function showToast(msg) {
   toastTimer = setTimeout(() => toast.style.opacity = '0', 1500);
 }
 
-// 监听设置面板发出的语言变化事件
 window.addEventListener('languageChanged', (e) => {
   const newLang = e.detail.lang;
   if (newLang !== currentLang) {
@@ -141,12 +135,11 @@ window.addEventListener('languageChanged', (e) => {
   }
 });
 
-// 资讯
+// 资讯、更新日志、通知函数（保持不变）
 async function loadBilibiliManual() {
   const container = document.getElementById('bilibiliFeed');
   try {
     const res = await fetch('./data/bilibili.json');
-    if (!res.ok) throw new Error();
     const data = await res.json();
     let html = `<div class="up-info"><img class="up-avatar" src="${data.up.face}" onerror="this.src='data:image/svg+xml,...'"><div class="up-name"><a href="${data.up.homepage}" target="_blank">${data.up.name}</a></div></div><div class="video-scroll-container"><div class="video-list">`;
     data.videos.forEach(v => {
@@ -157,7 +150,6 @@ async function loadBilibiliManual() {
   } catch(e) { container.innerHTML = '<div class="loading-placeholder">资讯加载失败，请稍后重试</div>'; }
 }
 
-// 更新日志
 async function loadChangelog() {
   const desktop = document.getElementById('changelogContentDesktop');
   const mobile = document.getElementById('changelogContentMobile');
@@ -166,8 +158,8 @@ async function loadChangelog() {
     const text = await res.text();
     const versions = parseChangelog(text);
     const langData = langCache[currentLang] || {};
-    const expand = langData.changelogExpand || (currentLang === 'zh' ? '查看全部' : 'Show All');
-    const collapse = langData.changelogCollapse || (currentLang === 'zh' ? '折叠' : 'Collapse');
+    const expand = langData.changelogExpand || (currentLang==='zh'?'查看全部':'Show All');
+    const collapse = langData.changelogCollapse || (currentLang==='zh'?'折叠':'Collapse');
     renderChangelog(versions, desktop, expand, collapse);
     renderChangelog(versions, mobile, expand, collapse);
   } catch(e) {
@@ -201,10 +193,7 @@ function renderChangelog(versions, container, expandText, collapseText) {
   const listDiv = document.createElement('div');
   listDiv.className = 'changelog-list';
 
-  function isRed(v) {
-    const match = v.match(/^Version\s+(\d+)\.(\d+)\.(\d+)$/);
-    return match && parseInt(match[3]) === 0;
-  }
+  function isRed(v) { const m=v.match(/^Version\s+(\d+)\.(\d+)\.(\d+)$/); return m&&parseInt(m[3])===0; }
   function renderList(items) {
     listDiv.innerHTML = '';
     items.forEach(ver => {
@@ -226,7 +215,7 @@ function renderChangelog(versions, container, expandText, collapseText) {
   const btn = document.createElement('button');
   btn.className = 'changelog-toggle';
   btn.innerHTML = `${expandText} <i class="fas fa-chevron-down"></i>`;
-  btn.addEventListener('click', () => {
+  btn.onclick = () => {
     expanded = !expanded;
     if (expanded) {
       renderList(versions);
@@ -235,25 +224,23 @@ function renderChangelog(versions, container, expandText, collapseText) {
       renderList(initial);
       btn.innerHTML = `${expandText} <i class="fas fa-chevron-down"></i>`;
     }
-  });
+  };
   container.innerHTML = '';
   container.appendChild(listDiv);
   container.appendChild(btn);
 }
 
-// 通知加载
 async function loadAnnouncementsWrapper() {
   const langData = langCache[currentLang] || {};
-  const moreText = langData.announcementMore || (currentLang === 'zh' ? '查看更多历史通知' : 'View More History');
+  const moreText = langData.announcementMore || (currentLang==='zh'?'查看更多历史通知':'View More History');
   const containers = [document.getElementById('announceDesktop'), document.getElementById('announceMobile')].filter(Boolean);
   for (const c of containers) {
     await loadAnnouncements(c, currentLang, { moreText, moreArrow: '→' });
   }
 }
 
-// 初始化
 async function init() {
-  loadLanguage('en').catch(() => {});
+  loadLanguage('en').catch(()=>{});
   const data = await loadLanguage('zh');
   if (data) {
     renderWithData(data);
