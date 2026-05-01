@@ -37,18 +37,51 @@ body {
   margin-right: 16px;
 }
 
-/* 容器确保相对定位 */
+/* 语言切换（旧版，保留以防引用） */
+.lang-wrapper { position: relative; user-select: none; }
+.lang-btn {
+  border-radius: 40px;
+  padding: 10px 18px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s;
+  backdrop-filter: blur(4px);
+}
+.lang-btn i { font-size: 1rem; transition: transform 0.2s; }
+.lang-btn.active i { transform: rotate(180deg); }
+.lang-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  border-radius: 24px;
+  overflow: hidden;
+  min-width: 140px;
+  z-index: 100;
+  display: none;
+}
+.lang-dropdown.show { display: block; }
+.lang-option {
+  padding: 12px 20px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.1s;
+}
+
+/* 用户区域与设置菜单 */
 #userAreaContainer {
   position: relative;
 }
 
-/* 用户区域与设置 */
 .user-area {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
-  position: relative;
+  position: static;
 }
 
 .settings-icon {
@@ -97,9 +130,8 @@ body {
   white-space: nowrap;
 }
 
-/* 下拉菜单 */
-.settings-dropdown,
-.settings-submenu {
+/* 主下拉菜单 */
+.settings-dropdown {
   position: absolute;
   top: 40px;
   right: 0;
@@ -111,12 +143,31 @@ body {
   overflow: hidden;
 }
 
+/* 子菜单（默认向左弹出） */
 .settings-submenu {
+  position: absolute;
+  background: var(--bg-dropdown, #fff);
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  min-width: 160px;
+  z-index: 210;
+  overflow: hidden;
   top: 0;
   right: 100%;
   margin-right: 4px;
 }
 
+/* 防止子菜单超出左侧屏幕（窄屏时改为向右弹出） */
+@media (max-width: 500px) {
+  .settings-submenu {
+    right: auto;
+    left: 100%;
+    margin-left: 4px;
+    margin-right: 0;
+  }
+}
+
+/* 菜单选项 */
 .settings-option {
   padding: 10px 16px;
   cursor: pointer;
@@ -124,52 +175,18 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: background 0.1s;
   white-space: nowrap;
+  transition: background 0.1s;
 }
-
 .settings-option:hover {
   background: var(--hover-bg, #f0f4f8);
 }
-
 .settings-option i {
   font-size: 0.8rem;
   margin-right: 4px;
 }
 
-.lang-wrapper { position: relative; user-select: none; }  /* 保留以防旧版，但实际已移除 */
-.lang-btn {
-  border-radius: 40px;
-  padding: 10px 18px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.15s;
-  backdrop-filter: blur(4px);
-}
-.lang-btn i { font-size: 1rem; transition: transform 0.2s; }
-.lang-btn.active i { transform: rotate(180deg); }
-.lang-dropdown {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  border-radius: 24px;
-  overflow: hidden;
-  min-width: 140px;
-  z-index: 100;
-  display: none;
-}
-.lang-dropdown.show { display: block; }
-.lang-option {
-  padding: 12px 20px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background 0.1s;
-}
-
+/* 会长/副会长 */
 .leaders {
   display: flex;
   justify-content: space-around;
@@ -187,6 +204,7 @@ body {
 .leader-label { font-size: 1.2rem; font-weight: 600; margin-top: 6px; }
 .leader-name { font-size: 1.5rem; font-weight: 700; margin-top: 4px; letter-spacing: 0.5px; }
 
+/* 卡片 */
 .card {
   backdrop-filter: blur(8px);
   border-radius: 32px;
@@ -204,6 +222,7 @@ body {
   font-weight: 700;
 }
 
+/* 桌面双栏 */
 .desktop-layout {
   display: flex;
   gap: 24px;
@@ -211,6 +230,7 @@ body {
 .left-column { flex: 8; display: flex; flex-direction: column; }
 .right-column { flex: 2; display: flex; flex-direction: column; }
 
+/* 快速上手 */
 .quickstart-content { font-size: 1rem; line-height: 1.6; }
 .quickstart-content p { margin-bottom: 1em; }
 .quickstart-content a {
@@ -218,6 +238,7 @@ body {
   font-weight: 500;
 }
 
+/* 传送门 */
 .portal-list { list-style: none; }
 .portal-item { display: flex; flex-direction: column; margin-bottom: 24px; }
 .portal-label { font-weight: 700; margin-bottom: 6px; font-size: 0.95rem; }
@@ -250,6 +271,7 @@ body {
   flex-shrink: 0;
 }
 
+/* 资讯 */
 .info-section { width: 100%; }
 .info-header { margin-bottom: 16px; }
 .info-header h2 { font-size: 1.6rem; font-weight: 700; }
@@ -261,6 +283,7 @@ body {
 }
 .up-name a { font-size: 1.2rem; font-weight: 700; text-decoration: none; }
 
+/* 视频列表 */
 .video-scroll-container { position: relative; }
 .video-list {
   display: flex;
@@ -307,6 +330,7 @@ body {
 .video-title a { text-decoration: none; }
 .video-meta { font-size: 0.8rem; display: flex; justify-content: space-between; }
 
+/* 底部 */
 .footer {
   margin-top: 24px;
   display: flex;
@@ -316,6 +340,7 @@ body {
 }
 .footer .copyright { display: flex; align-items: center; gap: 4px; }
 
+/* 轻提示 */
 .toast-tip {
   position: fixed;
   bottom: 30px;
@@ -381,7 +406,7 @@ body {
 .notice-time { text-align: right; font-size: 0.8rem; }
 .announce-more { text-align: right; margin-top: 12px; }
 
-/* 更新提示弹窗（结构） */
+/* 更新提示弹窗 */
 .update-overlay {
   position: fixed;
   top: 0;
@@ -420,11 +445,11 @@ body {
   color: white;
 }
 
-/* 桌面/移动切换 */
+/* 桌面/移动卡片切换 */
 .card-desktop { display: block; }
 .card-mobile { display: none; }
 
-/* 响应式 */
+/* 响应式（手机端） */
 @media (max-width: 680px) {
   .page { padding: 18px 16px 20px; }
   
@@ -438,11 +463,11 @@ body {
     margin-right: 0;
   }
   
-  /* 用户区域移到新行并右对齐 */
+  /* 用户区域独占一行并右对齐 */
   .user-area {
     align-self: flex-end;
-    width: auto;
-    margin-top: 0;
+    width: 100%;
+    justify-content: flex-end;
   }
   
   .desktop-layout { flex-direction: column; }
@@ -453,7 +478,6 @@ body {
   .right-column { order: 3; }
   .video-card { flex: 0 0 160px; }
 
-  /* 桌面/移动卡片切换 */
   .card-desktop { display: none; }
   .card-mobile { display: block; }
 }
