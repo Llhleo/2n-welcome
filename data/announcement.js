@@ -1,4 +1,4 @@
-// data/announcement.js – 通知渲染（无内联样式，动态链接携带语言）
+// data/announcement.js – 通知渲染（所有标题和标签居中）
 import { decodeRichText } from '../main/decode.js';
 import * as pipe from '../main/pipe.js';
 
@@ -43,13 +43,12 @@ export async function loadAnnouncements(container, lang, text) {
 
     let html = '';
     if (importantNotice) {
-      html += renderNotice(importantNotice, lang, true);
+      html += renderNotice(importantNotice, lang);
     }
     for (const notice of recent) {
-      if (notice !== importantNotice) html += renderNotice(notice, lang, false);
+      if (notice !== importantNotice) html += renderNotice(notice, lang);
     }
 
-    // 构建带语言和颜色模式的跳转链接
     const queryString = pipe.buildQueryString({ lang: lang, mode: pipe.getColorMode() });
     const href = 'announcement.html' + (queryString ? '?' + queryString : '');
 
@@ -66,7 +65,7 @@ export async function loadAnnouncements(container, lang, text) {
   }
 }
 
-function renderNotice(notice, lang, isImportant) {
+function renderNotice(notice, lang) {
   const titleText = getLocalizedString(notice.title, lang);
   const tag = (notice.tag || '').toLowerCase();
   let titleClass = 'notice-title ';
@@ -74,7 +73,8 @@ function renderNotice(notice, lang, isImportant) {
   else if (tag === 'joke') titleClass += 'notice-title-joke';
   else titleClass += 'notice-title-normal';
   
-  if (isImportant) titleClass += ' notice-title-center';
+  // 始终添加居中类
+  titleClass += ' notice-title-center';
 
   const content = lang === 'zh' ? (notice.zh || '') : (notice.en || notice.zh || '');
   const decoded = decodeRichText(content, 14);

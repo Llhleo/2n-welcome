@@ -259,9 +259,19 @@ body {
   padding-bottom: 12px;
   margin-bottom: 12px;
 }
-.notice-title { font-weight: bold; margin-bottom: 4px; }
-.notice-title-center { text-align: center; }  /* 确保居中类存在 */
-.notice-tag { font-size: 0.8rem; margin-bottom: 4px; }
+.notice-title {
+  font-weight: bold;
+  margin-bottom: 4px;
+  text-align: center;       /* 新增：标题默认居中 */
+}
+.notice-title-center {
+  text-align: center;
+}
+.notice-tag {
+  font-size: 0.8rem;
+  margin-bottom: 4px;
+  text-align: center;       /* 新增：标签默认居中 */
+}
 .notice-body {
   text-indent: 2em;
   margin: 0 0 8px;
