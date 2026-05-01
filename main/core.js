@@ -47,7 +47,7 @@ async function loadLanguage(langCode) {
   const folder = LANG_FOLDER[langCode];
   if (!folder) return null;
   if (langCache[langCode]) return langCache[langCode];
-  const baseUrl = `../data/${folder}/`;
+  const baseUrl = `./data/${folder}/`;
   try {
     const [titlesRes, startRes, linksRes] = await Promise.all([
       fetch(baseUrl + 'titles.json'),
