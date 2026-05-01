@@ -1,8 +1,9 @@
 #!/data/data/com.termux/files/usr/bin/bash
 # 2nPush.sh - 一键 add、commit、推送 main 分支到 GitHub
-# 用法: ./2nPush.sh -m "你的提交信息"
+# 用法: ./2nPush.sh [-m "提交信息"]
+# 无 -m 参数时交互提示，留空则使用 "a minor update"
 
-set -e  # 任一命令失败就停下
+set -e
 
 # 参数解析
 while [[ $# -gt 0 ]]; do
@@ -11,15 +12,15 @@ while [[ $# -gt 0 ]]; do
             shift
             if [[ $# -gt 0 ]]; then
                 MSG="$1"
+                shift
             else
-                echo "❌ 错误：-m 后面必须跟提交信息"
-                exit 1
+                echo "⚠️  -m 后未提供信息，将进入交互提示" >&2
             fi
-            shift
             ;;
         -h|--help)
-            echo "用法: $0 -m \"commit message\""
+            echo "用法: $0 [-m \"提交信息\"]"
             echo "示例: $0 -m \"fix core path\""
+            echo "       $0               # 交互输入，默认 a minor update"
             exit 0
             ;;
         *)
@@ -30,9 +31,12 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# 没有通过 -m 获得有效信息则交互输入
 if [[ -z "$MSG" ]]; then
-    echo "❌ 错误：必须提供 -m 参数，例如: $0 -m \"init commit\""
-    exit 1
+    read -p "commit message: " MSG
+    if [[ -z "$MSG" ]]; then
+        MSG="a minor update"
+    fi
 fi
 
 echo "👉 git add ."
