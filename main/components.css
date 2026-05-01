@@ -260,7 +260,7 @@ body {
   margin-bottom: 12px;
 }
 .notice-title { font-weight: bold; margin-bottom: 4px; }
-.notice-title-center { text-align: center; }
+.notice-title-center { text-align: center; }  /* 确保居中类存在 */
 .notice-tag { font-size: 0.8rem; margin-bottom: 4px; }
 .notice-body {
   text-indent: 2em;
@@ -270,6 +270,10 @@ body {
 .notice-writer { text-align: right; font-size: 0.85rem; }
 .notice-time { text-align: right; font-size: 0.8rem; }
 .announce-more { text-align: right; margin-top: 12px; }
+
+/* 桌面/移动切换 */
+.card-desktop { display: block; }
+.card-mobile { display: none; }
 
 /* 响应式 */
 @media (max-width: 680px) {
@@ -281,4 +285,7 @@ body {
   .info-section { order: 2; }
   .right-column { order: 3; }
   .video-card { flex: 0 0 160px; }
+  
+  .card-desktop { display: none; }
+  .card-mobile { display: block; }
 }

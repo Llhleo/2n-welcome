@@ -1,5 +1,6 @@
-// data/announcement.js – 通知渲染（无内联样式）
+// data/announcement.js – 通知渲染（无内联样式，动态链接携带语言）
 import { decodeRichText } from '../main/decode.js';
+import * as pipe from '../main/pipe.js';
 
 function getLocalizedString(raw, lang) {
   if (!raw || typeof raw !== 'string') return '';
@@ -48,9 +49,13 @@ export async function loadAnnouncements(container, lang, text) {
       if (notice !== importantNotice) html += renderNotice(notice, lang, false);
     }
 
+    // 构建带语言和颜色模式的跳转链接
+    const queryString = pipe.buildQueryString({ lang: lang, mode: pipe.getColorMode() });
+    const href = 'announcement.html' + (queryString ? '?' + queryString : '');
+
     html += `
       <div class="announce-more">
-        <button class="changelog-toggle" onclick="location.href='announcement.html?lang=${lang}'">
+        <button class="changelog-toggle" onclick="location.href='${href}'">
           ${text.moreText} <i class="fas fa-arrow-right"></i>
         </button>
       </div>
