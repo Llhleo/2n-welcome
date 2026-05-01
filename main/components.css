@@ -37,6 +37,11 @@ body {
   margin-right: 16px;
 }
 
+/* 容器确保相对定位 */
+#userAreaContainer {
+  position: relative;
+}
+
 /* 用户区域与设置 */
 .user-area {
   display: flex;
@@ -422,6 +427,24 @@ body {
 /* 响应式 */
 @media (max-width: 680px) {
   .page { padding: 18px 16px 20px; }
+  
+  .header-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .main-title {
+    margin-bottom: 8px;
+    margin-right: 0;
+  }
+  
+  /* 用户区域移到新行并右对齐 */
+  .user-area {
+    align-self: flex-end;
+    width: auto;
+    margin-top: 0;
+  }
+  
   .desktop-layout { flex-direction: column; }
   .left-column { width: 100%; }
   .right-column { width: 100%; }
@@ -430,13 +453,7 @@ body {
   .right-column { order: 3; }
   .video-card { flex: 0 0 160px; }
 
-  /* 手机端设置区域 */
-  .user-area {
-    margin-top: 8px;
-    width: 100%;
-    justify-content: flex-end;
-  }
-
+  /* 桌面/移动卡片切换 */
   .card-desktop { display: none; }
   .card-mobile { display: block; }
 }
