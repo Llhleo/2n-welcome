@@ -97,3 +97,17 @@ body {
   border-color: #cfdde9;
   color: #1e3b4f;
 }
+
+/* 更新弹窗 */
+.update-dialog {
+  background: #fff;
+  color: #1e2b3c;
+}
+.update-btn.cancel {
+  background: #f5f5f5;
+  color: #1e3b4f;
+}
+.update-btn.confirm {
+  background: #2563eb;
+  color: white;
+}
