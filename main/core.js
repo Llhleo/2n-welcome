@@ -1,35 +1,25 @@
-// main/core.js
-import { lightStyles, darkStyles } from '../data/styles.js';
+// main/core.js – 主逻辑（无 JS 样式注入）
+import * as pipe from './pipe.js';
 import { decodeRichText } from './decode.js';
 import { checkForUpdate } from './checkUpdate.js';
 import { loadAnnouncements } from '../data/announcement.js';
-import * as pipe from './pipe.js';
 
-// ---------- 主题 ----------
+// 主题切换改为 <link> 标签
 function applyTheme() {
   const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const mode = pipe.getColorMode();
-  let useDark = isDark;
-  if (mode === 'light') useDark = false;
-  else if (mode === 'dark') useDark = true;
-
-  const styleId = 'dynamic-theme';
-  let styleTag = document.getElementById(styleId);
-  if (!styleTag) {
-    styleTag = document.createElement('style');
-    styleTag.id = styleId;
-    document.head.appendChild(styleTag);
+  const themeLink = document.getElementById('theme-link');
+  if (themeLink) {
+    themeLink.href = isDark ? './main/theme-dark.css' : './main/theme-light.css';
   }
-  styleTag.textContent = useDark ? darkStyles : lightStyles;
 }
 applyTheme();
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
 
-// ---------- 语言 ----------
 const LANG_FOLDER = { zh: 'zh-CN', en: 'en-US' };
 const langCache = {};
 let currentLang = pipe.getLanguage();
 
+// DOM 引用（保持不变）
 const guildTitleEl = document.getElementById('guildTitle');
 const langDisplaySpan = document.getElementById('langDisplay');
 const leaderLabel1 = document.getElementById('leaderLabel1');
@@ -43,6 +33,7 @@ const langBtn = document.getElementById('langButton');
 const langDropdown = document.getElementById('langDropdown');
 const langWrapper = document.getElementById('langWrapper');
 
+// 语言加载（路径修正为 ./data/）
 async function loadLanguage(langCode) {
   const folder = LANG_FOLDER[langCode];
   if (!folder) return null;
@@ -137,7 +128,6 @@ function showToast(msg) {
   toastTimer = setTimeout(() => toast.style.opacity = '0', 1500);
 }
 
-// 语言切换
 async function switchLanguage(langCode) {
   if (langCode === currentLang) { closeDropdown(); return; }
   const data = await loadLanguage(langCode);
@@ -155,38 +145,30 @@ async function switchLanguage(langCode) {
 function openDropdown() { langDropdown.classList.add('show'); langBtn.classList.add('active'); }
 function closeDropdown() { langDropdown.classList.remove('show'); langBtn.classList.remove('active'); }
 
-langBtn.addEventListener('click', (e) => {
-  e.stopPropagation();
-  langDropdown.classList.contains('show') ? closeDropdown() : openDropdown();
-});
+langBtn.addEventListener('click', (e) => { e.stopPropagation(); langDropdown.classList.contains('show') ? closeDropdown() : openDropdown(); });
 document.querySelectorAll('.lang-option').forEach(opt => {
   opt.addEventListener('click', (e) => { e.stopPropagation(); switchLanguage(opt.dataset.lang); });
 });
 document.addEventListener('click', (e) => { if (!langWrapper.contains(e.target)) closeDropdown(); });
 langDropdown.addEventListener('click', (e) => e.stopPropagation());
 
-// ---------- 资讯 ----------
+// 资讯加载
 async function loadBilibiliManual() {
   const container = document.getElementById('bilibiliFeed');
   try {
     const res = await fetch('./data/bilibili.json');
-    if (!res.ok) throw new Error('fail');
+    if (!res.ok) throw new Error();
     const data = await res.json();
-    renderManualFeed(data);
+    let html = `<div class="up-info"><img class="up-avatar" src="${data.up.face}" onerror="this.src='data:image/svg+xml,...'"><div class="up-name"><a href="${data.up.homepage}" target="_blank">${data.up.name}</a></div></div><div class="video-scroll-container"><div class="video-list">`;
+    data.videos.forEach(v => {
+      html += `<div class="video-card"><div class="video-iframe-wrapper">${v.iframe.replace('<iframe', '<iframe style="position:absolute; top:0; left:0; width:100%; height:100%;"')}</div><div class="video-title"><a href="https://www.bilibili.com/video/${v.bvid}" target="_blank">${v.title}</a></div><div class="video-meta"><span>${v.date}</span><span><i class="far fa-play-circle"></i> ${v.play||''}</span></div></div>`;
+    });
+    html += `</div></div>`;
+    container.innerHTML = html;
   } catch(e) { container.innerHTML = '<div class="loading-placeholder">资讯加载失败，请稍后重试</div>'; }
 }
 
-function renderManualFeed(data) {
-  const container = document.getElementById('bilibiliFeed');
-  let html = `<div class="up-info"><img class="up-avatar" src="${data.up.face}" onerror="this.src='data:image/svg+xml,...'"><div class="up-name"><a href="${data.up.homepage}" target="_blank">${data.up.name}</a></div></div><div class="video-scroll-container"><div class="video-list">`;
-  data.videos.forEach(v => {
-    html += `<div class="video-card"><div class="video-iframe-wrapper">${v.iframe.replace('<iframe', '<iframe style="position:absolute; top:0; left:0; width:100%; height:100%;"')}</div><div class="video-title"><a href="https://www.bilibili.com/video/${v.bvid}" target="_blank">${v.title}</a></div><div class="video-meta"><span>${v.date}</span><span><i class="far fa-play-circle"></i> ${v.play||''}</span></div></div>`;
-  });
-  html += `</div></div>`;
-  container.innerHTML = html;
-}
-
-// ---------- 更新日志 ----------
+// 更新日志
 async function loadChangelog() {
   const desktop = document.getElementById('changelogContentDesktop');
   const mobile = document.getElementById('changelogContentMobile');
@@ -232,7 +214,7 @@ function renderChangelog(versions, container, expandText, collapseText) {
 
   function isRed(v) {
     const match = v.match(/^Version\s+(\d+)\.(\d+)\.(\d+)$/);
-    return match && parseInt(match[1]) === 0 && parseInt(match[3]) === 0;
+    return match && parseInt(match[3]) === 0;
   }
   function renderList(items) {
     listDiv.innerHTML = '';
@@ -270,13 +252,12 @@ function renderChangelog(versions, container, expandText, collapseText) {
   container.appendChild(btn);
 }
 
-// ---------- 通知 ----------
+// 通知
 async function loadAnnouncementsWrapper() {
   const langData = langCache[currentLang] || {};
   const moreText = langData.announcementMore || (currentLang === 'zh' ? '查看更多历史通知' : 'View More History');
   const containers = [document.getElementById('announceDesktop'), document.getElementById('announceMobile')].filter(Boolean);
   for (const c of containers) {
-    // 按钮跳转改用 pipe.navigate，但需要在生成 HTML 时提供 onclick，这里先保持原有方式，跳转链接附加参数
     await loadAnnouncements(c, currentLang, { moreText, moreArrow: '→' });
   }
 }
@@ -284,10 +265,9 @@ async function loadAnnouncementsWrapper() {
 // 启动
 async function init() {
   loadLanguage('en').catch(() => {});
-  const data = await loadLanguage(currentLang);
+  const data = await loadLanguage('zh');
   if (data) {
     renderWithData(data);
-    // 检测更新（使用当前语言）
     checkForUpdate({ language: currentLang, countdown: 10 });
   }
   loadBilibiliManual();

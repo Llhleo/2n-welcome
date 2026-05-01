@@ -1,4 +1,4 @@
-// data/announcement.js
+// data/announcement.js – 通知渲染（无内联样式）
 import { decodeRichText } from '../main/decode.js';
 
 function getLocalizedString(raw, lang) {
@@ -64,8 +64,13 @@ export async function loadAnnouncements(container, lang, text) {
 function renderNotice(notice, lang, isImportant) {
   const titleText = getLocalizedString(notice.title, lang);
   const tag = (notice.tag || '').toLowerCase();
-  const titleClass = tag === 'important' ? 'notice-title-important' : (tag === 'joke' ? 'notice-title-joke' : 'notice-title-normal');
-  const titleCenter = isImportant ? ' notice-title-center' : '';
+  let titleClass = 'notice-title ';
+  if (tag === 'important') titleClass += 'notice-title-important';
+  else if (tag === 'joke') titleClass += 'notice-title-joke';
+  else titleClass += 'notice-title-normal';
+  
+  if (isImportant) titleClass += ' notice-title-center';
+
   const content = lang === 'zh' ? (notice.zh || '') : (notice.en || notice.zh || '');
   const decoded = decodeRichText(content, 14);
   const timeStr = formatTime(notice._file, lang);
@@ -73,7 +78,7 @@ function renderNotice(notice, lang, isImportant) {
 
   return `
     <div class="notice-item">
-      <div class="notice-title ${titleClass}${titleCenter}">${escapeHTML(titleText)}</div>
+      <div class="${titleClass}">${escapeHTML(titleText)}</div>
       <div class="notice-tag ${titleClass}">[${escapeHTML(tag)}]</div>
       <p class="notice-body">${decoded}</p>
       <div class="notice-writer">${writer}</div>
@@ -91,4 +96,5 @@ function formatTime(filename, lang) {
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   return `${months[+m-1]} ${+d}, ${y} ${h}:${min}`;
 }
+
 function escapeHTML(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
