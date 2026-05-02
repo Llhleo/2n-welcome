@@ -1,4 +1,4 @@
-// pipe.js – 跨页面参数管理（语言、颜色模式、登录凭据）
+// pipe.js – 跨页面参数管理（修复语言/颜色同步）
 
 const STORAGE_PREFIX = '2n_';
 
@@ -11,7 +11,10 @@ export function getLanguage() {
   if (stored === 'zh' || stored === 'en') return stored;
   // 默认跟随浏览器语言
   const navLang = navigator.language || navigator.userLanguage || 'zh';
-  return navLang.startsWith('zh') ? 'zh' : 'en';
+  const defaultLang = navLang.startsWith('zh') ? 'zh' : 'en';
+  // 首次加载时写入缓存
+  localStorage.setItem(STORAGE_PREFIX + 'lang', defaultLang);
+  return defaultLang;
 }
 
 /**
@@ -21,6 +24,8 @@ export function getLanguage() {
 export function setLanguage(lang) {
   if (lang === 'zh' || lang === 'en') {
     localStorage.setItem(STORAGE_PREFIX + 'lang', lang);
+    // 同时触发自定义事件，确保 settings.js 感知语言变化
+    window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
   }
 }
 
@@ -31,7 +36,9 @@ export function setLanguage(lang) {
 export function getColorMode() {
   const stored = localStorage.getItem(STORAGE_PREFIX + 'colorMode');
   if (stored === 'light' || stored === 'dark' || stored === 'auto') return stored;
-  return 'auto'; // 默认跟随系统
+  // 默认跟随系统
+  localStorage.setItem(STORAGE_PREFIX + 'colorMode', 'auto');
+  return 'auto';
 }
 
 /**
@@ -41,6 +48,23 @@ export function getColorMode() {
 export function setColorMode(mode) {
   if (mode === 'auto' || mode === 'light' || mode === 'dark') {
     localStorage.setItem(STORAGE_PREFIX + 'colorMode', mode);
+    // 同步更新主题样式
+    applyThemeFromMode(mode);
+  }
+}
+
+/**
+ * 根据手动模式立即切换主题（不依赖系统监听）
+ * @param {string} mode
+ */
+function applyThemeFromMode(mode) {
+  let theme = mode;
+  if (mode === 'auto') {
+    theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  const themeLink = document.getElementById('theme-link');
+  if (themeLink) {
+    themeLink.href = `./main/theme-${theme}.css`;
   }
 }
 
@@ -69,7 +93,6 @@ export function getPipeParams() {
 
 /**
  * 将参数转换为查询字符串（不含 ? 开头）
- * 只添加有值的参数
  * @param {object} params
  * @returns {string}
  */
