@@ -65,19 +65,20 @@ export async function loadAnnouncements(container, lang, text) {
   }
 }
 
-function renderNotice(notice, lang) {
+function renderNotice(notice, lang, isImportant) {
   const titleText = getLocalizedString(notice.title, lang);
   const tag = (notice.tag || '').toLowerCase();
   let titleClass = 'notice-title ';
   if (tag === 'important') titleClass += 'notice-title-important';
   else if (tag === 'joke') titleClass += 'notice-title-joke';
   else titleClass += 'notice-title-normal';
-  
-  // 始终添加居中类
-  titleClass += ' notice-title-center';
+  if (isImportant) titleClass += ' notice-title-center';
 
   const content = lang === 'zh' ? (notice.zh || '') : (notice.en || notice.zh || '');
-  const decoded = decodeRichText(content, 14);
+  const paragraphs = content.split('\n').filter(p => p.trim() !== '');
+  const decodedParagraphs = paragraphs.map(p => decodeRichText(p, 14));
+  const bodyHTML = decodedParagraphs.map(p => `<p class="notice-body">${p}</p>`).join('');
+
   const timeStr = formatTime(notice._file, lang);
   const writer = escapeHTML(notice.writer || '');
 
@@ -85,7 +86,7 @@ function renderNotice(notice, lang) {
     <div class="notice-item">
       <div class="${titleClass}">${escapeHTML(titleText)}</div>
       <div class="notice-tag ${titleClass}">[${escapeHTML(tag)}]</div>
-      <p class="notice-body">${decoded}</p>
+      ${bodyHTML}
       <div class="notice-writer">${writer}</div>
       <div class="notice-time">${timeStr}</div>
     </div>

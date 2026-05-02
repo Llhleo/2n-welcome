@@ -1,24 +1,14 @@
-// decode.js – 解析带格式标记的文本为 HTML，支持 \n 换行
+// decode.js – 解析带格式标记的文本为 HTML，支持\n换行，修复属性解析
 
-/**
- * 将 JSON 字符串中的格式标记转换为 HTML，并将 \n 转为 <br>
- * @param {string} input - 原始文本
- * @param {number} baseFontSize - 周围字号（px）
- * @returns {string} HTML 字符串
- */
 export function decodeRichText(input, baseFontSize = 16) {
   if (!input || typeof input !== 'string') return input;
 
-  // 匹配块：可选单引号前缀，花括号内部不含花括号的内容
   const blockRegex = /(\x27?)\{((?:\\.|[^{}])*)\}\1/g;
 
   let result = input.replace(blockRegex, (match, quote, content) => {
-    // 单引号包裹 → 原文照显（去掉花括号和引号）
     if (quote === "'") {
       return escapeHTML(content);
     }
-
-    // 解析格式化块
     const parsed = parseBlock(content, baseFontSize);
     if (!parsed) return escapeHTML(`{${content}}`);
 
@@ -47,17 +37,16 @@ export function decodeRichText(input, baseFontSize = 16) {
   return result;
 }
 
-// 解析花括号内部内容
 function parseBlock(content, baseFontSize) {
   content = content.trim();
 
   // 1. 提取文本字符串
   const strMatch = content.match(/^"((?:\\.|[^"\\])*)"/);
   if (!strMatch) return null;
-  let text = strMatch[1].replace(/\\(.)/g, '$1'); // 处理转义
+  let text = strMatch[1].replace(/\\(.)/g, '$1');
   let rest = content.substring(strMatch[0].length);
 
-  // 2. 尝试提取 link
+  // 2. 尝试提取 link (可选)
   let link = null;
   const linkMatch = rest.match(/^\s*\|\s*"link"\s*:\s*"((?:\\.|[^"\\])*)"/);
   if (linkMatch) {
@@ -65,66 +54,51 @@ function parseBlock(content, baseFontSize) {
     rest = rest.substring(linkMatch[0].length);
   }
 
-  // 3. 解析剩余属性（逗号分隔）
-  let color = null;
-  let font = null;
-  let size = null;
-  const propRegex = /\s*,\s*"(\w+)"\s*:\s*(?:"((?:\\.|[^"\\])*)"|([^,}]+))/g;
-  let propMatch;
-  while ((propMatch = propRegex.exec(rest)) !== null) {
+  // 3. 提取其他属性（兼容有无逗号的情况）
+  let color = null, font = null, size = null;
+  // 移除竖线残留（如果没有link，rest可能以" "或空白开头）
+  rest = rest.replace(/^\s*\|\s*/, '');
+  
+  // 逐个匹配属性键值对，允许键值对之间可选逗号和空白
+  const propRegex = /^\s*,?\s*"(\w+)"\s*:\s*(?:"((?:\\.|[^"\\])*)"|([^,\s}]+))/;
+  while (rest.length > 0) {
+    const propMatch = rest.match(propRegex);
+    if (!propMatch) break;
     const key = propMatch[1].toLowerCase();
     let rawValue = propMatch[2] !== undefined ? propMatch[2] : propMatch[3];
     rawValue = rawValue.trim();
 
     switch (key) {
-      case 'color':
-        color = resolveColor(rawValue);
-        break;
-      case 'font':
-        font = rawValue;
-        break;
-      case 'size':
-        size = parseSize(rawValue, baseFontSize);
-        break;
+      case 'color': color = resolveColor(rawValue); break;
+      case 'font': font = rawValue; break;
+      case 'size': size = parseSize(rawValue, baseFontSize); break;
     }
+    rest = rest.substring(propMatch[0].length);
   }
 
   return { text, link, color, font, size };
 }
 
-// 颜色标准化（支持颜色缩写）
 function resolveColor(value) {
   const colors = {
-    'c': '#7eef6d',
-    'un': '#ffe65d',
-    'r': '#4d52e3',
-    'e': '#861fde',
-    'l': '#de1f1f',
-    'm': '#1fdbde',
-    'u': '#ff2b75',
-    's': '#2bffa3',
-    'en': '#eeeeee',
-    'uq': '#555555'
+    'c': '#7eef6d', 'un': '#ffe65d', 'r': '#4d52e3', 'e': '#861fde',
+    'l': '#de1f1f', 'm': '#1fdbde', 'u': '#ff2b75', 's': '#2bffa3',
+    'en': '#eeeeee', 'uq': '#555555'
   };
   const lower = value.toLowerCase();
-  if (colors[lower]) return colors[lower];
-  return value;
+  return colors[lower] || value;
 }
 
 function parseSize(value, base) {
   let num;
-  if (/^[+-]/.test(value)) {
-    num = base + parseFloat(value);
-  } else {
-    num = parseFloat(value);
-  }
+  if (/^[+-]/.test(value)) num = base + parseFloat(value);
+  else num = parseFloat(value);
   return isNaN(num) ? null : num;
 }
 
 function escapeHTML(str) {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
-
 function escapeAttr(str) {
-  return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+  return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
 }
