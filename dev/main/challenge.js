@@ -36,8 +36,8 @@ export async function runChallenge(user) {
     detail: { challenges, user } 
   }));
 
-  // 等待脚本响应（超时 15 秒）
-  const response = await waitForChallengeResponse(15000);
+  // 等待脚本响应（超时 30 秒）
+  const response = await waitForChallengeResponse(30000);
   if (!response || !response.success) {
     // 彻底阻止页面：覆盖文档内容
     document.documentElement.innerHTML = '';
