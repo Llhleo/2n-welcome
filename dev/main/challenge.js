@@ -1,4 +1,4 @@
-// challenge.js – 挑战-响应验证（重试 + 脚本就绪检测）
+// challenge.js – 挑战-响应验证（1000次挑战，重试 + 脚本就绪检测）
 
 export function isDeveloper(user) {
   const devUsers = ['debug', 'dev', 'admin'];
@@ -25,7 +25,7 @@ export async function runChallenge(user) {
   // 最多尝试 2 次
   for (let attempt = 1; attempt <= 2; attempt++) {
     const challenges = [];
-    for (let i = 0; i < 500; i++) {
+    for (let i = 0; i < 1000; i++) {      // 改为 1000 次
       challenges.push({
         id: i,
         data: Array.from(crypto.getRandomValues(new Uint8Array(32)))
