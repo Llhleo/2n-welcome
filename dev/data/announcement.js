@@ -91,7 +91,7 @@ function canViewNotice(vis, user) {
   if (!vis || vis === 'public') return true;
   if (vis === 'guest') return !user;
   if (vis === 'private') return !!user;
-  if (vis === 'test') return user === 'debug' || user === 'dev' || user === 'admin';
+  if (vis === 'test') return ['debug', 'dev', 'admin', 'pythonWsr', 'awdc-jskysdzl'].includes(user);
   if (vis === 'secret') return true; // secret 通知显示，但内容加密提示由渲染函数处理
   if (Array.isArray(vis)) {
     return user && vis.includes(user);
