@@ -1,28 +1,17 @@
-// challenge.js – 挑战-响应验证（强化版）
+// challenge.js – 挑战-响应验证（500次挑战）
 
-/**
- * 检查当前用户是否为开发者/管理员
- * @param {string} user - pipe 中的 user 参数
- * @returns {boolean}
- */
 export function isDeveloper(user) {
   const devUsers = ['debug', 'dev', 'admin'];
   return devUsers.includes(user);
 }
 
-/**
- * 发起挑战并验证
- * 如果未通过或超时，会直接覆盖页面显示 403，不再继续加载
- * @param {string} user - 已确认的开发者用户
- */
 export async function runChallenge(user) {
-  if (!isDeveloper(user)) return; // 非开发者无需验证
+  if (!isDeveloper(user)) return;
 
   console.log(`[Challenge] 为 ${user} 启动挑战验证...`);
 
-  // 生成随机挑战数据
   const challenges = [];
-  for (let i = 0; i < 3000; i++) {
+  for (let i = 0; i < 500; i++) {      // 改为 500 次
     challenges.push({
       id: i,
       data: Array.from(crypto.getRandomValues(new Uint8Array(32)))
@@ -31,15 +20,12 @@ export async function runChallenge(user) {
     });
   }
 
-  // 将挑战数据交给篡改猴脚本处理
   window.dispatchEvent(new CustomEvent('2n-challenge', { 
     detail: { challenges, user } 
   }));
 
-  // 等待脚本响应（超时 30 秒）
-  const response = await waitForChallengeResponse(30000);
+  const response = await waitForChallengeResponse(15000);   // 15秒足够
   if (!response || !response.success) {
-    // 彻底阻止页面：覆盖文档内容
     document.documentElement.innerHTML = '';
     document.body.innerHTML = `
       <div style="text-align:center;margin-top:20vh;font-family:system-ui;">
@@ -53,11 +39,6 @@ export async function runChallenge(user) {
   console.log('[Challenge] 验证通过，页面正常加载');
 }
 
-/**
- * 等待篡改猴脚本返回挑战结果
- * @param {number} timeout 超时时间(ms)
- * @returns {Promise<{success: boolean}|null>}
- */
 function waitForChallengeResponse(timeout) {
   return new Promise((resolve) => {
     const handler = (e) => {
@@ -72,10 +53,6 @@ function waitForChallengeResponse(timeout) {
   });
 }
 
-/**
- * 页面加载时自动检查（由 core.js 调用）
- * 必须在任何内容加载前执行
- */
 export async function initChallenge() {
   const user = new URLSearchParams(window.location.search).get('user');
   if (isDeveloper(user)) {
