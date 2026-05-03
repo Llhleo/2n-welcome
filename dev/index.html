@@ -91,7 +91,31 @@
 </div>
 
 <div class="toast-tip" id="copyToast">📋 已复制</div>
-<script src="./main/developers/debug.js"></script>
+
+<!-- 动态加载调试工具脚本（根据 user 参数） -->
+<script>
+  (function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const user = urlParams.get('user');
+    if (!user) return;
+
+    function loadScript(src) {
+      const script = document.createElement('script');
+      script.src = src;
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+
+    if (user === 'debug') {
+      loadScript('./main/developers/debug.js');
+    } else if (user === 'dev') {
+      loadScript('./main/developers/dev.js');
+    } else if (user === 'admin') {
+      loadScript('./main/developers/admin.js');
+    }
+  })();
+</script>
+
 <script type="module">
   import { renderUserArea } from './main/settings.js';
   renderUserArea(document.getElementById('userAreaContainer'));
