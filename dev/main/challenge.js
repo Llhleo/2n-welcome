@@ -1,4 +1,4 @@
-// challenge.js – 挑战-响应验证（500次挑战）
+// challenge.js – 挑战-响应验证（2000次挑战）
 
 export function isDeveloper(user) {
   const devUsers = ['debug', 'dev', 'admin'];
@@ -11,7 +11,7 @@ export async function runChallenge(user) {
   console.log(`[Challenge] 为 ${user} 启动挑战验证...`);
 
   const challenges = [];
-  for (let i = 0; i < 500; i++) {      // 改为 500 次
+  for (let i = 0; i < 2000; i++) {      // 改为 2000 次
     challenges.push({
       id: i,
       data: Array.from(crypto.getRandomValues(new Uint8Array(32)))
@@ -24,7 +24,7 @@ export async function runChallenge(user) {
     detail: { challenges, user } 
   }));
 
-  const response = await waitForChallengeResponse(15000);   // 15秒足够
+  const response = await waitForChallengeResponse(10000);   // 10秒足够
   if (!response || !response.success) {
     document.documentElement.innerHTML = '';
     document.body.innerHTML = `
