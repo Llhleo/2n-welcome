@@ -2,7 +2,7 @@
 import * as pipe from './pipe.js';
 import { decodeRichText } from './decode.js';
 import { checkForUpdate } from './checkUpdate.js';
-import { loadAnnouncements } from './announcement.js';
+import { loadAnnouncements } from '../data/announcement.js';
 import { initChallenge } from './challenge.js';
 
 // 主题切换
@@ -300,21 +300,23 @@ async function loadAnnouncementsWrapper() {
   }
 }
 
-// 初始化（总入口）
+// ✨ 初始化（总入口）
 async function init() {
-  // **前置挑战验证（必须在任何内容加载前）**
+  // 1. 挑战验证（如果 user 是 debug/dev/admin）
   await initChallenge();
 
-  // 检查 Mark List 封禁
+  // 2. 检查 Mark List 封禁
   await checkUserMark();
 
-  // 正常页面逻辑
+  // 3. 加载语言包
   loadLanguage('en').catch(() => {});
   const data = await loadLanguage('zh');
   if (data) {
     renderWithData(data);
     checkForUpdate({ language: currentLang, countdown: 10 });
   }
+
+  // 4. 其他内容
   loadBilibiliManual();
   loadChangelog();
   loadAnnouncementsWrapper();
