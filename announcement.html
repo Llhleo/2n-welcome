@@ -49,12 +49,15 @@
   </style>
 </head>
 <body>
+  <div style="display:flex;flex-direction:column;align-items:flex-start;max-width:800px;margin:0 auto;padding:20px 16px;">
   <!-- 返回按钮动态填充 -->
   <a id="backButton" class="back-btn" href="index.html">
     <i class="fas fa-arrow-left"></i> <span id="backText">返回</span>
   </a>
 
   <div id="allNoticeContainer"><div class="loading-placeholder">加载中...</div></div>
+
+  </div>
 
   <script type="module">
     import * as pipe from './main/pipe.js';
@@ -66,9 +69,10 @@
     const backBtn = document.getElementById('backButton');
     const backText = document.getElementById('backText');
     if (backBtn && backText) {
-      // 构建带语言参数的返回链接
-      const query = pipe.buildQueryString({ lang: lang, mode: pipe.getColorMode() });
-      backBtn.href = 'index.html' + (query ? '?' + query : '');
+      // 构建带完整参数的返回链接
+    const params = pipe.getPipeParams();
+    const query = pipe.buildQueryString(params);
+    backBtn.href = 'index.html' + (query ? '?' + query : '');
       backText.textContent = lang === 'zh' ? '返回' : 'Back';
     }
 

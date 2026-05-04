@@ -450,11 +450,8 @@ body {
   }
   
   /* 用户区域独占一行，靠右对齐 */
-  .user-area {
-    align-self: flex-end !important;
-    width: auto !important;
-    justify-content: flex-end !important;
-    margin-left: auto;
+  .header-row > .user-area {
+    align-self: flex-end;
   }
   
   .desktop-layout { flex-direction: column; }
