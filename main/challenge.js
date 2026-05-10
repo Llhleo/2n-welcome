@@ -64,4 +64,3 @@ export async function initChallenge() {
     throw new Error('Access denied');
   }
   await runChallenge(user);
-}
