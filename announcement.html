@@ -36,20 +36,9 @@
       padding-bottom: 20px;
       margin-bottom: 20px;
     }
-    .notice-item:last-child {
-      border-bottom: none;
-    }
-    .notice-image {
-      max-width: 100%;
-      border-radius: 12px;
-      margin: 10px 0;
-    }
-    .image-caption {
-      font-size: 0.85rem;
-      color: #6a859c;
-      text-align: center;
-      margin-top: 4px;
-    }
+    .notice-item:last-child { border-bottom: none; }
+    .notice-image { max-width: 100%; border-radius: 12px; margin: 10px 0; }
+    .image-caption { font-size: 0.85rem; color: #6a859c; text-align: center; margin-top: 4px; }
     @media (prefers-color-scheme: dark) {
       .back-btn { color: #cbd5e1; border-color: #475569; }
       .back-btn:hover { background: #334155; }
@@ -64,9 +53,6 @@
   <div id="allNoticeContainer"><div class="loading-placeholder">加载中...</div></div>
 
   <script type="module">
-    import { initChallenge } from './main/challenge.js';
-    await initChallenge();
-
     import * as pipe from './main/pipe.js';
     import { decodeRichText } from './main/decode.js';
     import { decryptText } from './main/decrypt.js';
