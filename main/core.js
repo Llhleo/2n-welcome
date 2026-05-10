@@ -180,19 +180,11 @@ window.addEventListener('languageChanged', (e) => {
   const newLang = e.detail.lang;
   if (newLang !== currentLang) {
     currentLang = newLang;
-    loadLanguage(newLang).then(data =>Lang = newLang;
     loadLanguage(newLang).then(data => {
-      if ( {
       if (data) {
         renderWithData(data);
-       data) {
-        renderWithData(data);
-        loadAnnouncements loadAnnouncementsWrapper();
+        loadAnnouncementsWrapper();
         loadChangelog();
-Wrapper();
-        loadChangelog();
-      }
-    });
       }
     });
   }
@@ -253,7 +245,6 @@ async function loadChangelog() {
     renderChangelog( expand, collapse);
     renderChangelog(versions, mobile, expand, collapse);
 versions, mobile, expand, collapse);
-  } catch(e) {
   } catch(e) {
     desktop.innerHTML = '<div class="    desktop.innerHTML = '<div class="loading-placeholder">更新日志不可用</div>';
    loading-placeholder">更新日志不可用</div>';
@@ -441,4 +432,3 @@ async function init() {
 ouncementsWrapper();
 }
 
-init();
