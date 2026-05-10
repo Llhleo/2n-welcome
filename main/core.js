@@ -3,8 +3,8 @@ import * as pipe from './pipe.js';
 import { decodeRichText } from './decode.js';
 import { checkForUpdate } from './checkUpdate.js';
 import { loadAnnouncements } from '../data/announcement.js';
-import { initChallenge } from './challenge.js';
-import { show403 } from './error403.js';
+// import { initChallenge } from './challenge.js';
+// import { show403 } from './error403.js';
 
 // 主题切换
 function applyTheme() {
@@ -413,7 +413,7 @@ async function init() {
 async function init() {
   // 1. 权限与挑战（失败会显示错误码并中止）
   权限与挑战（失败会显示错误码并中止）
-  await initChallenge();
+  // await initChallenge();
   // 2. Mark await initChallenge();
   // 2. Mark List 封禁检查
   await checkUserMark();
