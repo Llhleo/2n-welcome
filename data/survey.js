@@ -1,9 +1,9 @@
-// data/survey.js – 问卷嵌入模块
+// survey.js – 问卷嵌入模块（仅 user 有值时显示）
 
 /**
- * 渲染问卷 iframe，仅当 user 参数非空时显示
+ * 渲染问卷 iframe
  * @param {HTMLElement} container - 问卷容器元素
- * @param {string} user - 从 pipe 获取的用户名
+ * @param {string} user - 从 pipe 获取的用户名（非空时才显示）
  * @param {boolean} isMobile - 是否为手机端（用于调整高度）
  */
 export function renderSurvey(container, user, isMobile = false) {

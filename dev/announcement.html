@@ -64,6 +64,9 @@
   <div id="allNoticeContainer"><div class="loading-placeholder">加载中...</div></div>
 
   <script type="module">
+    import { initChallenge } from './main/challenge.js';
+    await initChallenge();
+
     import * as pipe from './main/pipe.js';
     import { decodeRichText } from './main/decode.js';
     import { decryptText } from './main/decrypt.js';
@@ -73,16 +76,15 @@
     const pwd = pipe.getUrlParam('pwd');
     const user = pipe.getUrlParam('user');
 
-    // 返回按钮
     const backBtn = document.getElementById('backButton');
     const backText = document.getElementById('backText');
     if (backBtn && backText) {
-      const query = pipe.buildQueryString({ lang: lang, mode: pipe.getColorMode() });
+      const params = pipe.getPipeParams();
+      const query = pipe.buildQueryString(params);
       backBtn.href = 'index.html' + (query ? '?' + query : '');
       backText.textContent = lang === 'zh' ? '返回' : 'Back';
     }
 
-    // 工具函数
     function escapeHTML(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
     function getLocalizedString(raw, lang) {
       if (!raw || !raw.includes('|')) return (raw || '').trim();
@@ -99,16 +101,13 @@
       return `${months[+m-1]} ${+d}, ${y} ${h}:${min}`;
     }
 
-    // 权限检查（与首页一致）
     function canViewNotice(vis, user) {
       if (!vis || vis === 'public') return true;
       if (vis === 'guest') return !user;
       if (vis === 'private') return !!user;
-      if (vis === 'test') return ['debug', 'dev', 'admin', 'pythonWsr', 'awdc-jskysdzl'].includes(user);
+      if (vis === 'test') return ['debug','dev','admin','pythonWsr','awdc-jskysdzl'].includes(user);
       if (vis === 'secret') return true;
-      if (Array.isArray(vis)) {
-        return user && vis.includes(user);
-      }
+      if (Array.isArray(vis)) return user && vis.includes(user);
       return true;
     }
 
@@ -121,27 +120,22 @@
         return numA - numB;
       });
       for (const key of keys) {
-        if (info[key]) {
-          images.push({ file: info[key] });
-        }
+        if (info[key]) images.push({ file: info[key] });
       }
       return images;
     }
 
-    // 加载全部通知
     async function loadAllNotices() {
       const container = document.getElementById('allNoticeContainer');
       try {
         const indexRes = await fetch('./data/Announcement/index.json');
         if (!indexRes.ok) throw new Error('索引加载失败');
         const indexData = await indexRes.json();
-
         const fileEntries = Object.entries(indexData);
         if (!fileEntries.length) {
           container.innerHTML = '<div class="loading-placeholder">暂无通知</div>';
           return;
         }
-
         let html = '';
         for (const [file, info] of fileEntries) {
           if (!canViewNotice(info.visibility, user)) continue;
@@ -171,7 +165,6 @@
       const writer = escapeHTML(notice.writer || '');
       const timeStr = formatTime(filename, lang);
 
-      // 正文解密或直接显示
       let bodyContent = '';
       if (isSecret && pwd) {
         const zhDecrypted = notice.zh ? await decryptText(notice.zh, pwd) : '';
@@ -191,7 +184,6 @@
         bodyContent = decodedParagraphs.map(p => `<p class="notice-body">${p}</p>`).join('');
       }
 
-      // 图片解密或直接显示
       let imagesHTML = '';
       if (notice._images && notice._images.length > 0) {
         for (let i = 0; i < notice._images.length; i++) {
@@ -234,16 +226,13 @@
       `;
     }
 
-    // 主题
     function applyTheme() {
       const mode = pipe.getColorMode();
       let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       if (mode === 'light') isDark = false;
       else if (mode === 'dark') isDark = true;
       const themeLink = document.getElementById('theme-link');
-      if (themeLink) {
-        themeLink.href = isDark ? './main/theme-dark.css' : './main/theme-light.css';
-      }
+      if (themeLink) themeLink.href = isDark ? './main/theme-dark.css' : './main/theme-light.css';
     }
     applyTheme();
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);

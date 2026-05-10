@@ -1,4 +1,4 @@
-// decode.js – 解析带格式标记的文本为 HTML，支持\n换行，修复属性解析
+// decode.js – 解析带格式标记的文本为 HTML，支持\n换行
 
 export function decodeRichText(input, baseFontSize = 16) {
   if (!input || typeof input !== 'string') return input;
@@ -56,10 +56,8 @@ function parseBlock(content, baseFontSize) {
 
   // 3. 提取其他属性（兼容有无逗号的情况）
   let color = null, font = null, size = null;
-  // 移除竖线残留（如果没有link，rest可能以" "或空白开头）
   rest = rest.replace(/^\s*\|\s*/, '');
   
-  // 逐个匹配属性键值对，允许键值对之间可选逗号和空白
   const propRegex = /^\s*,?\s*"(\w+)"\s*:\s*(?:"((?:\\.|[^"\\])*)"|([^,\s}]+))/;
   while (rest.length > 0) {
     const propMatch = rest.match(propRegex);

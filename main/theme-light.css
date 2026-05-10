@@ -14,6 +14,18 @@ body {
   color: transparent;
 }
 
+/* 设置菜单 */
+.settings-dropdown, .settings-submenu {
+  background: #ffffff;
+}
+.settings-option {
+  color: #1e3b4f;
+}
+.settings-option:hover {
+  background: #f0f4f8;
+}
+
+/* 旧版语言按钮 */
 .lang-btn {
   background: rgba(255,255,255,0.8);
   border: 1px solid #cfdde9;
@@ -29,6 +41,7 @@ body {
 .lang-option:hover { background: #e6f0f9; }
 .lang-option.selected { background: #d4e2f0; color: #0a3144; }
 
+/* 会长/副会长 */
 .leader-card {
   background: rgba(255,255,255,0.5);
   box-shadow: 0 6px 12px rgba(46,78,102,0.04);
@@ -36,6 +49,7 @@ body {
 .leader-label { color: #2b4e65; }
 .leader-name { color: #0b2f44; }
 
+/* 卡片 */
 .card {
   background: rgba(255,255,255,0.85);
   border: 1px solid rgba(255,255,255,0.44);
@@ -99,11 +113,6 @@ body {
   color: #1e3b4f;
 }
 
-/* 设置菜单 */
-.settings-dropdown, .settings-submenu { background: #ffffff; }
-.settings-option { color: #1e3b4f; }
-.settings-option:hover { background: #f0f4f8; }
-
 /* 更新弹窗 */
 .update-dialog {
   background: #fff;
@@ -116,4 +125,23 @@ body {
 .update-btn.confirm {
   background: #2563eb;
   color: white;
+}
+
+/* 贡献榜 */
+.contrib-row {
+  border-bottom-color: #cbd5e1;
+}
+.contrib-name { color: #1e2b3c; }
+.contrib-score { color: #2563eb; }
+
+/* Mark List */
+.mark-name {
+  color: #de1f1f;
+  background: rgba(222,31,31,0.1);
+}
+
+/* 问卷容器 */
+.survey-wrapper {
+  background: #fff;
+  border: 1px solid #e2eaf1;
 }

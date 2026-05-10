@@ -1,4 +1,4 @@
-// checkUpdate.js
+// checkUpdate.js – 版本检测弹窗（适配主题）
 export async function checkForUpdate({ language = 'zh', countdown = 10 } = {}) {
   const STORAGE_KEY = 'cachedVersion';
   let latestVersion = null;
@@ -8,8 +8,12 @@ export async function checkForUpdate({ language = 'zh', countdown = 10 } = {}) {
     const match = text.match(/^#{0,6}\s*Version\s+([\d.]+)/m);
     if (match) latestVersion = match[1];
   } catch (e) { return; }
+  
   const cachedVersion = localStorage.getItem(STORAGE_KEY);
-  if (!cachedVersion) { localStorage.setItem(STORAGE_KEY, latestVersion); return; }
+  if (!cachedVersion) {
+    localStorage.setItem(STORAGE_KEY, latestVersion);
+    return;
+  }
   if (cachedVersion === latestVersion) return;
 
   const lang = await loadCheckLang(language);
@@ -47,7 +51,10 @@ export async function checkForUpdate({ language = 'zh', countdown = 10 } = {}) {
     resolved = true;
     clearInterval(timer);
     document.body.removeChild(overlay);
-    if (doUpdate) { localStorage.setItem(STORAGE_KEY, latestVersion); location.reload(); }
+    if (doUpdate) {
+      localStorage.setItem(STORAGE_KEY, latestVersion);
+      location.reload();
+    }
   };
   const timer = setInterval(() => {
     remain--;
@@ -64,6 +71,11 @@ async function loadCheckLang(langCode) {
     const res = await fetch(`./data/${folder}/check.json`);
     return await res.json();
   } catch (e) {
-    return { title: 'Notice', message: 'A new version is available. Update now?', cancel: 'Cancel', update: 'Update' };
+    return {
+      title: 'Notice',
+      message: 'A new version is available. Update now?',
+      cancel: 'Cancel',
+      update: 'Update'
+    };
   }
 }

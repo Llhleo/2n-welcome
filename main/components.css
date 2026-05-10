@@ -108,7 +108,7 @@ body {
   overflow: hidden;
 }
 
-/* 子菜单（位置由 JS 动态控制，移除固定 right/left） */
+/* 子菜单（位置由 JS 动态控制） */
 .settings-submenu {
   position: absolute;
   background: var(--bg-dropdown, #fff);
@@ -214,7 +214,8 @@ body {
   gap: 24px;
 }
 .left-column { flex: 8; display: flex; flex-direction: column; }
-.right-column { flex: 2; display: flex; flex-direction: column; }
+.right-column { flex: 2; display: flex; flex-direction: column;
+}
 
 /* 快速上手 */
 .quickstart-content { font-size: 1rem; line-height: 1.6; }
@@ -431,6 +432,58 @@ body {
   color: white;
 }
 
+/* 贡献榜 */
+.contribution-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.contrib-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px dotted #ccc;
+}
+.contrib-name {
+  font-weight: 500;
+  max-width: 70%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.contrib-score {
+  font-weight: 600;
+  color: var(--color-accent, #2563eb);
+}
+
+/* Mark List */
+.mark-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.mark-name {
+  color: #de1f1f;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: rgba(222,31,31,0.1);
+  font-size: 0.9rem;
+}
+
+/* 问卷容器 */
+.survey-wrapper {
+  margin-top: 16px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.survey-wrapper iframe {
+  width: 100%;
+  border: none;
+}
+
 /* 桌面/移动卡片切换 */
 .card-desktop { display: block; }
 .card-mobile { display: none; }
@@ -467,4 +520,16 @@ body {
 
   .card-desktop { display: none; }
   .card-mobile { display: block; }
+
+  /* 贡献榜和 Mark List 在手机端并列 */
+  .right-column .card:nth-of-type(1) { order: 1; }
+  .right-column .card:nth-of-type(2) { order: 2; }
+  .right-column .card:nth-of-type(3) { order: 3; }
+
+  .contrib-row {
+    font-size: 0.9rem;
+  }
+  .contrib-name {
+    max-width: 60%;
+  }
 }
