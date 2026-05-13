@@ -1,10 +1,12 @@
-// core.js – 主逻辑（保留对调试用户的验证，普通用户正常加载）
+// core.js – 主逻辑（集成访问控制）
 import * as pipe from './pipe.js';
 import { decodeRichText } from './decode.js';
 import { checkForUpdate } from './checkUpdate.js';
 import { loadAnnouncements } from '../data/announcement.js';
 import { initChallenge } from './challenge.js';
 import { isDeveloper } from './challenge.js';
+import { show403 } from './error403.js';
+import { other_admission } from '../admission.js';
 
 // 主题切换
 function applyTheme() {
@@ -24,6 +26,7 @@ const LANG_FOLDER = { zh: './data/zh-CN', en: './data/en-US' };
 const langCache = {};
 let currentLang = pipe.getLanguage();
 
+// DOM 引用
 const guildTitleEl = document.getElementById('guildTitle');
 const leaderLabel1 = document.getElementById('leaderLabel1');
 const leaderLabel2 = document.getElementById('leaderLabel2');
@@ -302,10 +305,15 @@ async function loadAnnouncementsWrapper() {
 // 初始化
 async function init() {
   const user = pipe.getUrlParam('user');
-  // 仅当用户是开发者时，执行挑战验证；否则跳过，继续正常加载
-  if (isDeveloper(user)) {
-    await initChallenge();
+
+  // 统一权限检查：非调试用户且 other_admission 为 false 时直接拦截
+  if (!isDeveloper(user) && !other_admission) {
+    show403(1);
+    return;
   }
+
+  // 调试用户的挑战验证（由 challenge.js 根据 test_admission 决定是否执行）
+  await initChallenge(user);
 
   await checkUserMark();
   loadLanguage('en').catch(() => {});

@@ -1,4 +1,4 @@
-// decode.js – 解析带格式标记的文本为 HTML，支持\n换行
+// decode.js – 解析带格式标记的文本为 HTML，支持 \n 换行和相对字号
 
 export function decodeRichText(input, baseFontSize = 16) {
   if (!input || typeof input !== 'string') return input;
@@ -17,6 +17,7 @@ export function decodeRichText(input, baseFontSize = 16) {
     if (color) styles.push(`color:${color}`);
     if (font) styles.push(`font-family:${font}`);
     if (size != null) {
+      // 限制在 35% ~ 300% 的基准字号
       const min = baseFontSize * 0.35;
       const max = baseFontSize * 3;
       const clamped = Math.min(Math.max(size, min), max);
@@ -32,7 +33,6 @@ export function decodeRichText(input, baseFontSize = 16) {
     }
   });
 
-  // 将剩余文本中的 \n 替换为 <br>
   result = result.replace(/\n/g, '<br>');
   return result;
 }
@@ -46,7 +46,7 @@ function parseBlock(content, baseFontSize) {
   let text = strMatch[1].replace(/\\(.)/g, '$1');
   let rest = content.substring(strMatch[0].length);
 
-  // 2. 尝试提取 link (可选)
+  // 2. 尝试提取 link
   let link = null;
   const linkMatch = rest.match(/^\s*\|\s*"link"\s*:\s*"((?:\\.|[^"\\])*)"/);
   if (linkMatch) {
@@ -54,22 +54,30 @@ function parseBlock(content, baseFontSize) {
     rest = rest.substring(linkMatch[0].length);
   }
 
-  // 3. 提取其他属性（兼容有无逗号的情况）
+  // 3. 提取其他属性（兼容有无逗号）
   let color = null, font = null, size = null;
-  rest = rest.replace(/^\s*\|\s*/, '');
-  
+  rest = rest.replace(/^\s*\|\s*/, '');  // 去除剩余的竖线
+
   const propRegex = /^\s*,?\s*"(\w+)"\s*:\s*(?:"((?:\\.|[^"\\])*)"|([^,\s}]+))/;
+
   while (rest.length > 0) {
     const propMatch = rest.match(propRegex);
     if (!propMatch) break;
+
     const key = propMatch[1].toLowerCase();
     let rawValue = propMatch[2] !== undefined ? propMatch[2] : propMatch[3];
     rawValue = rawValue.trim();
 
     switch (key) {
-      case 'color': color = resolveColor(rawValue); break;
-      case 'font': font = rawValue; break;
-      case 'size': size = parseSize(rawValue, baseFontSize); break;
+      case 'color':
+        color = resolveColor(rawValue);
+        break;
+      case 'font':
+        font = rawValue;
+        break;
+      case 'size':
+        size = parseSize(rawValue, baseFontSize);
+        break;
     }
     rest = rest.substring(propMatch[0].length);
   }
@@ -77,20 +85,26 @@ function parseBlock(content, baseFontSize) {
   return { text, link, color, font, size };
 }
 
+// 颜色标准化
 function resolveColor(value) {
   const colors = {
     'c': '#7eef6d', 'un': '#ffe65d', 'r': '#4d52e3', 'e': '#861fde',
     'l': '#de1f1f', 'm': '#1fdbde', 'u': '#ff2b75', 's': '#2bffa3',
-    'en': '#eeeeee', 'uq': '#555555'
+    'et': '#eeeeee', 'uq': '#555555'
   };
   const lower = value.toLowerCase();
   return colors[lower] || value;
 }
 
+// 解析字号：支持纯数字、+数字、-数字，返回绝对 px 值
 function parseSize(value, base) {
+  if (!value) return null;
   let num;
-  if (/^[+-]/.test(value)) num = base + parseFloat(value);
-  else num = parseFloat(value);
+  if (/^[+-]/.test(value)) {
+    num = base + parseFloat(value);
+  } else {
+    num = parseFloat(value);
+  }
   return isNaN(num) ? null : num;
 }
 
