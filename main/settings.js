@@ -1,14 +1,15 @@
 // settings.js – 用户区域与设置菜单（智能防溢出）
-import * as pipe from './pipe.js';
+import * as implicit from './implicitPipe.js';
+import { getUrlParam } from './explicitPipe.js';
 
-let currentLang = pipe.getLanguage();
-let currentMode = pipe.getColorMode();
+let currentLang = implicit.getLanguage();
+let currentMode = implicit.getColorMode();
 
 export async function renderUserArea(container) {
   if (!container) return;
   container.style.position = 'relative';
 
-  const rawUser = pipe.getUrlParam('user') || '';
+  const rawUser = getUrlParam('user') || '';
   const username = rawUser ? decodeURIComponent(rawUser) : '';
 
   let avatarUrl = '';
@@ -156,7 +157,7 @@ export async function renderUserArea(container) {
       const lang = item.dataset.lang;
       if (lang !== currentLang) {
         currentLang = lang;
-        pipe.setLanguage(lang);
+        implicit.setLanguage(lang);
       }
       hideAll();
     });
@@ -168,7 +169,7 @@ export async function renderUserArea(container) {
       const mode = item.dataset.mode;
       if (mode !== currentMode) {
         currentMode = mode;
-        pipe.setColorMode(mode);
+        implicit.setColorMode(mode);
       }
       hideAll();
     });

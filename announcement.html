@@ -16,15 +16,16 @@
   <div id="allNoticeContainer"><div class="loading-placeholder">加载中...</div></div>
 
   <script type="module">
-    import * as pipe from './main/pipe.js';
+    import * as implicit from './main/implicitPipe.js';
+    import { getUrlParam, buildQueryString, getExplicitParams } from './main/explicitPipe.js';
     import { decodeRichText } from './main/decode.js';
     import { decryptText } from './main/decrypt.js';
     import { initChallenge, isDeveloper } from './main/challenge.js';
     import { show403 } from './main/error403.js';
     import { test_admission, other_admission } from './admission.js';
 
-    const user = pipe.getUrlParam('user');
-    const lang = pipe.getUrlParam('lang') || pipe.getLanguage();
+    const user = getUrlParam('user');
+    const lang = getUrlParam('lang') || implicit.getLanguage();
     document.documentElement.lang = lang === 'zh' ? 'zh' : 'en';
 
     // 权限控制
@@ -39,12 +40,12 @@
       }
     }
 
-    const pwd = pipe.getUrlParam('pwd');
+    const pwd = getUrlParam('pwd');
     const backBtn = document.getElementById('backButton');
     const backText = document.getElementById('backText');
     if (backBtn && backText) {
-      const params = pipe.getPipeParams();
-      const query = pipe.buildQueryString(params);
+      const params = getExplicitParams();
+      const query = buildQueryString({ lang, mode: implicit.getColorMode(), ...params });
       backBtn.href = 'index.html' + (query ? '?' + query : '');
       backText.textContent = lang === 'zh' ? '返回' : 'Back';
     }
@@ -191,7 +192,7 @@
     }
 
     function applyTheme() {
-      const mode = pipe.getColorMode();
+      const mode = implicit.getColorMode();
       let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       if (mode === 'light') isDark = false;
       else if (mode === 'dark') isDark = true;

@@ -1,6 +1,7 @@
-// announcement.js – 通知渲染（适配 index.json 新结构 + visibility 权限）
+// announcement.js – 通知渲染（适配显式/隐式参数）
 import { decodeRichText } from '../main/decode.js';
-import * as pipe from '../main/pipe.js';
+import { getUrlParam, buildQueryString } from '../main/explicitPipe.js';
+import { getColorMode } from '../main/implicitPipe.js';
 
 function getLocalizedString(raw, lang) {
   if (!raw || typeof raw !== 'string') return '';
@@ -16,28 +17,22 @@ export async function loadAnnouncements(container, lang, text) {
     const indexRes = await fetch('./data/Announcement/index.json');
     if (!indexRes.ok) throw new Error('索引加载失败');
     const indexData = await indexRes.json();
-
-    // 从对象结构中提取文件名列表，并获取每个通知的 visibility 和图片信息
     const fileEntries = Object.entries(indexData);
     const allNotices = [];
-    const user = pipe.getUrlParam('user'); // 当前用户名
-    const pwd = pipe.getUrlParam('pwd');
+    const user = getUrlParam('user');
 
     for (const [file, info] of fileEntries) {
-      // 权限检查
       if (!canViewNotice(info.visibility, user)) continue;
-
       const res = await fetch(`./data/Announcement/${file}`);
       if (res.ok) {
         const notice = await res.json();
         notice._file = file;
         notice._visibility = info.visibility || 'public';
-        notice._images = extractImages(info); // 提取图片字段，按顺序排列
+        notice._images = extractImages(info);
         allNotices.push(notice);
       }
     }
 
-    // 如果没有有权限的通知，显示提示
     if (allNotices.length === 0) {
       container.innerHTML = `<div class="loading-placeholder">${lang === 'zh' ? '暂无通知' : 'No notices'}</div>`;
       return;
@@ -65,8 +60,9 @@ export async function loadAnnouncements(container, lang, text) {
       if (notice !== importantNotice) html += renderNotice(notice, lang);
     }
 
-    const queryString = pipe.buildQueryString({ lang: lang, mode: pipe.getColorMode() });
-    const href = 'announcement.html' + (queryString ? '?' + queryString : '');
+    const params = { lang: lang, mode: getColorMode(), user: user };
+    const query = buildQueryString(params);
+    const href = 'announcement.html' + (query ? '?' + query : '');
 
     html += `
       <div class="announce-more">
@@ -81,29 +77,16 @@ export async function loadAnnouncements(container, lang, text) {
   }
 }
 
-/**
- * 检查当前用户是否有权查看该通知
- * @param {string} vis visibility 值
- * @param {string|null} user
- * @returns {boolean}
- */
 function canViewNotice(vis, user) {
   if (!vis || vis === 'public') return true;
   if (vis === 'guest') return !user;
   if (vis === 'private') return !!user;
-  if (vis === 'test') return ['debug', 'dev', 'admin', 'pythonWsr', 'awdc-jskysdzl'].includes(user);
-  if (vis === 'secret') return true; // secret 通知显示，但内容加密提示由渲染函数处理
-  if (Array.isArray(vis)) {
-    return user && vis.includes(user);
-  }
+  if (vis === 'test') return ['debug','dev','admin','pythonWsr','awdc-jskysdzl'].includes(user);
+  if (vis === 'secret') return true;
+  if (Array.isArray(vis)) return user && vis.includes(user);
   return true;
 }
 
-/**
- * 从 index.json 的通知条目中提取图片字段，按数字排序返回数组
- * @param {object} info index.json 中单个通知的值对象
- * @returns {Array} [{file: path}, ...]
- */
 function extractImages(info) {
   const images = [];
   const keys = Object.keys(info).filter(k => k.startsWith('image') && /\d+$/.test(k));
@@ -113,9 +96,7 @@ function extractImages(info) {
     return numA - numB;
   });
   for (const key of keys) {
-    if (info[key]) {
-      images.push({ file: info[key] });
-    }
+    if (info[key]) images.push({ file: info[key] });
   }
   return images;
 }
@@ -130,11 +111,10 @@ function renderNotice(notice, lang) {
   titleClass += ' notice-title-center';
 
   const isSecret = notice._visibility === 'secret';
-  const user = pipe.getUrlParam('user');
-  const pwd = pipe.getUrlParam('pwd');
+  const user = getUrlParam('user');
+  const pwd = getUrlParam('pwd');
   const hasCredentials = !!(user && pwd);
 
-  // 正文内容处理
   const content = lang === 'zh' ? (notice.zh || '') : (notice.en || notice.zh || '');
   let bodyHTML = '';
   if (isSecret && !hasCredentials) {
@@ -148,17 +128,22 @@ function renderNotice(notice, lang) {
     bodyHTML = decodedParagraphs.map(p => `<p class="notice-body">${p}</p>`).join('');
   }
 
-  // 图片处理（暂不显示加密图片，只显示公开图片）
   let imagesHTML = '';
   if (notice._images && notice._images.length > 0) {
     for (let i = 0; i < notice._images.length; i++) {
       const imgFile = notice._images[i].file;
-      // 如果是 .txt 文件则为加密图片，首页不显示（提示跳转）
-      if (imgFile.endsWith('.txt')) {
-        const tip = `[${lang === 'zh' ? '加密图片' : 'Encrypted image'}] `;
-        imagesHTML += `<div class="image-wrapper"><div class="notice-image-placeholder">${tip}${lang === 'zh' ? '图' : 'Fig.'}${i+1}</div></div>`;
+      const caption = `${lang === 'zh' ? '图' : 'Fig.'}${i+1}`;
+      if (imgFile.endsWith('.txt') && hasCredentials) {
+        // 首页不处理加密图片，仅显示占位
+        imagesHTML += `<div class="image-wrapper"><div class="notice-image-placeholder">${caption} (需要密钥)</div></div>`;
+      } else if (!imgFile.endsWith('.txt')) {
+        imagesHTML += `
+          <div class="image-wrapper">
+            <img class="notice-image" src="${imgFile}" alt="${caption}" onerror="this.style.display='none'">
+            <div class="image-caption">${caption}</div>
+          </div>`;
       } else {
-        imagesHTML += `<div class="image-wrapper"><img class="notice-image" src="${imgFile}" alt="图${i+1}" onerror="this.style.display='none'"><div class="image-caption">${lang === 'zh' ? '图' : 'Fig.'}${i+1}</div></div>`;
+        imagesHTML += `<div class="image-wrapper"><div class="notice-image-placeholder">${caption} (需要密钥)</div></div>`;
       }
     }
   }

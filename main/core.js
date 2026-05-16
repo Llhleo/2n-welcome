@@ -1,16 +1,16 @@
-// core.js – 主逻辑（集成访问控制）
-import * as pipe from './pipe.js';
+// core.js – 主逻辑（集成访问控制，使用显隐式参数）
+import * as implicit from './implicitPipe.js';
+import { getUrlParam } from './explicitPipe.js';
 import { decodeRichText } from './decode.js';
 import { checkForUpdate } from './checkUpdate.js';
 import { loadAnnouncements } from '../data/announcement.js';
-import { initChallenge } from './challenge.js';
-import { isDeveloper } from './challenge.js';
+import { initChallenge, isDeveloper } from './challenge.js';
 import { show403 } from './error403.js';
 import { other_admission } from '../admission.js';
 
 // 主题切换
 function applyTheme() {
-  const mode = pipe.getColorMode();
+  const mode = implicit.getColorMode();
   let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   if (mode === 'light') isDark = false;
   else if (mode === 'dark') isDark = true;
@@ -24,7 +24,7 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', app
 
 const LANG_FOLDER = { zh: './data/zh-CN', en: './data/en-US' };
 const langCache = {};
-let currentLang = pipe.getLanguage();
+let currentLang = implicit.getLanguage();
 
 // DOM 引用
 const guildTitleEl = document.getElementById('guildTitle');
@@ -117,7 +117,7 @@ async function loadMarkList() {
 
 // 检查当前 user 是否在 Mark List 中并 403
 async function checkUserMark() {
-  const user = pipe.getUrlParam('user');
+  const user = getUrlParam('user');
   if (!user) return;
   try {
     const res = await fetch('./data/mark.json');
@@ -304,7 +304,7 @@ async function loadAnnouncementsWrapper() {
 
 // 初始化
 async function init() {
-  const user = pipe.getUrlParam('user');
+  const user = getUrlParam('user');
 
   // 统一权限检查：非调试用户且 other_admission 为 false 时直接拦截
   if (!isDeveloper(user) && !other_admission) {

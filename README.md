@@ -1,3 +1,6 @@
+## Version 0.5.2
+· separate pipe
+
 ## Version 0.5.1
 · adapt the path
 
