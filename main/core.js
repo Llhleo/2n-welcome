@@ -1,4 +1,4 @@
-// core.js – 主逻辑（集成访问控制，使用显隐式参数）
+// core.js – 主逻辑（集成访问控制、更新日志、贡献榜、Mark List、资讯等）
 import * as implicit from './implicitPipe.js';
 import { getUrlParam } from './explicitPipe.js';
 import { decodeRichText } from './decode.js';
@@ -235,12 +235,14 @@ function parseChangelog(md) {
   const blocks = [];
   let current = null;
   for (const line of lines) {
-    const m = line.match(/^#{0,6}\s*Version\s+([\d.]+)/);
-    if (m) {
+    // 移除 <br> 标签（不区分大小写，可带或不带闭合斜杠）
+    const cleanLine = line.replace(/<br\s*\/?>/gi, '');
+    const verMatch = cleanLine.match(/^#{0,6}\s*Version\s+([\d.]+)/);
+    if (verMatch) {
       if (current) blocks.push(current);
-      current = { version: 'Version ' + m[1], items: [] };
-    } else if (current && /^\s*·/.test(line)) {
-      current.items.push(line.replace(/^\s*·\s*/, ''));
+      current = { version: 'Version ' + verMatch[1], items: [] };
+    } else if (current && /^\s*·/.test(cleanLine)) {
+      current.items.push(cleanLine.replace(/^\s*·\s*/, ''));
     }
   }
   if (current) blocks.push(current);

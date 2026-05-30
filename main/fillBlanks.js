@@ -1,0 +1,232 @@
+// fillBlanks.js – 自定义问卷渲染与交互
+
+import { decodeRichText } from './decode.js';
+
+/**
+ * 渲染自定义问卷
+ * @param {HTMLElement} container 问卷容器
+ * @param {Object} config 问卷配置对象（已包含 _file 字段）
+ * @param {string} lang 当前语言 (zh/en)
+ * @param {string} user 当前用户名（从链接获取）
+ */
+export function renderCustomSurvey(container, config, lang, user) {
+  if (!container || !config) return;
+
+  const t = config[lang] || config.zh;
+  if (!t) return;
+
+  const questions = Object.keys(t)
+    .filter(k => /^question\d+$/.test(k))
+    .sort((a, b) => parseInt(a.slice(8)) - parseInt(b.slice(8)));
+
+  // 构建 HTML 结构
+  let html = `<form id="customSurveyForm" class="custom-survey" data-file="${config._file}">`;
+  html += `<h3 class="survey-title">${decodeRichText(t.title, 18)}</h3>`;
+
+  for (const qKey of questions) {
+    const q = t[qKey];
+    html += renderQuestion(q, qKey, lang);
+  }
+
+  html += `<div class="survey-actions">
+    <button type="button" id="surveySubmit">${lang === 'zh' ? '提交' : 'Submit'}</button>
+  </div>`;
+  html += `</form>`;
+
+  container.innerHTML = html;
+
+  // 初始化条件显示
+  evaluateAllConditions(t, lang);
+
+  // 绑定输入变化时重新评估条件
+  document.querySelectorAll('#customSurveyForm input, #customSurveyForm select').forEach(el => {
+    el.addEventListener('change', () => evaluateAllConditions(t, lang));
+    el.addEventListener('input', () => evaluateAllConditions(t, lang));
+  });
+
+  // 绑定提交按钮（将在 submit.js 中实现）
+  import('./submit.js').then(module => {
+    document.getElementById('surveySubmit')?.addEventListener('click', () => {
+      module.submitSurvey(config, lang, user);
+    });
+  });
+}
+
+/**
+ * 渲染单个问题
+ */
+function renderQuestion(q, qKey, lang) {
+  const text = q.text || '';
+  // 解析填空占位符 ___str___
+  const blankMatches = [...text.matchAll(/___(\w+)___/g)];
+  // 解析选择占位符 (_str_)
+  const selectMatches = [...text.matchAll(/\((\w+)\)/g)];
+
+  // 构建带输入控件的文本段落
+  let html = `<div class="survey-question" id="${qKey}"`;
+
+  // 如果有条件，添加 data-condition 属性
+  if (q.condition) {
+    html += ` data-condition='${JSON.stringify(q.condition)}'`;
+  }
+  html += ` style="display:none;">`; // 默认隐藏，条件满足后显示
+
+  html += `<div class="q-text">`;
+
+  // 将文本拆分为普通文本和占位符，按顺序处理
+  let lastIdx = 0;
+  const parts = [];
+  // 合并所有占位符并排序
+  const allMatches = [
+    ...blankMatches.map(m => ({ type: 'blank', start: m.index, end: m.index + m[0].length, id: m[1] })),
+    ...selectMatches.map(m => ({ type: 'select', start: m.index, end: m.index + m[0].length, id: m[1] }))
+  ].sort((a, b) => a.start - b.start);
+
+  for (const match of allMatches) {
+    // 添加前面的普通文本（用 decodeRichText 渲染）
+    if (match.start > lastIdx) {
+      const plainText = text.substring(lastIdx, match.start);
+      parts.push(decodeRichText(plainText, 16));
+    }
+    // 添加控件
+    if (match.type === 'blank') {
+      const cfg = q.blanks?.[match.id] || {};
+      parts.push(renderBlank(match.id, cfg));
+    } else {
+      const cfg = q.selects?.[match.id] || {};
+      parts.push(renderSelect(match.id, cfg));
+    }
+    lastIdx = match.end;
+  }
+  // 剩余文本
+  if (lastIdx < text.length) {
+    parts.push(decodeRichText(text.substring(lastIdx), 16));
+  }
+
+  html += parts.join('');
+  html += `</div></div>`;
+  return html;
+}
+
+function renderBlank(id, cfg) {
+  const requiredAttr = cfg.required ? 'required' : '';
+  const typeAttr = cfg.type || 'str';
+  let inputType = 'text';
+  if (typeAttr === 'int' || typeAttr === 'float') inputType = 'number';
+  let extraAttr = '';
+  if (cfg.min !== undefined) extraAttr += ` min="${cfg.min}"`;
+  if (cfg.max !== undefined) extraAttr += ` max="${cfg.max}"`;
+  if (typeAttr === 'str') {
+    if (cfg.min) extraAttr += ` minlength="${cfg.min}"`;
+    if (cfg.max) extraAttr += ` maxlength="${cfg.max}"`;
+  }
+  return `<span class="blank-wrapper"><input type="${inputType}" name="blank_${id}" data-blank="${id}" ${requiredAttr} ${extraAttr} /></span>`;
+}
+
+function renderSelect(id, cfg) {
+  const options = cfg.options || [];
+  const min = cfg.min || 0;
+  const max = cfg.max || 1;
+  const isMulti = max > 1;
+  const inputType = isMulti ? 'checkbox' : 'radio';
+  let html = `<span class="select-wrapper" data-select="${id}" data-min="${min}" data-max="${max}">`;
+  options.forEach((opt, idx) => {
+    html += `<label class="select-option"><input type="${inputType}" name="select_${id}" value="${escapeHTML(opt)}" data-option="${idx}"> ${escapeHTML(opt)}</label>`;
+  });
+  html += `</span>`;
+  return html;
+}
+
+/**
+ * 评估所有问题的条件，显示/隐藏
+ */
+function evaluateAllConditions(t, lang) {
+  const questions = Object.keys(t).filter(k => /^question\d+$/.test(k));
+  for (const qKey of questions) {
+    const q = t[qKey];
+    const el = document.getElementById(qKey);
+    if (!el || !q.condition) {
+      if (el) el.style.display = 'block';
+      continue;
+    }
+    const show = evaluateCondition(q.condition);
+    el.style.display = show ? 'block' : 'none';
+  }
+}
+
+/**
+ * 评估二维条件数组
+ * @param {Array} condition 格式：[[cond1, cond2, ...], [cond3, ...], ...]
+ * @returns {boolean}
+ */
+function evaluateCondition(condition) {
+  // 外层数组：OR
+  for (const orGroup of condition) {
+    // 内层数组：AND
+    let allTrue = true;
+    for (const condStr of orGroup) {
+      if (!parseSingleCondition(condStr)) {
+        allTrue = false;
+        break;
+      }
+    }
+    if (allTrue) return true;
+  }
+  return false;
+}
+
+/**
+ * 解析单个条件表达式，如 "level > 50" 或 "day==day[1]"
+ */
+function parseSingleCondition(condStr) {
+  // 匹配格式：填空ID 操作符 值
+  const blankMatch = condStr.match(/^(\w+)\s*([><=!]+)\s*(.+)$/);
+  if (blankMatch) {
+    const id = blankMatch[1];
+    const op = blankMatch[2];
+    const val = blankMatch[3].trim();
+    // 从当前表单获取填空的值
+    const input = document.querySelector(`[data-blank="${id}"]`);
+    if (!input) return false;
+    const inputVal = input.value;
+    // 类型转换尝试
+    const numVal = parseFloat(val);
+    const isNum = !isNaN(numVal) && isFinite(Number(val));
+    let compareVal = isNum ? numVal : val.replace(/^['"]|['"]$/g, '');
+    let actualVal = isNum ? parseFloat(inputVal) : inputVal;
+    if (isNaN(actualVal)) actualVal = inputVal;
+
+    switch (op) {
+      case '==': return actualVal == compareVal;
+      case '!=': return actualVal != compareVal;
+      case '>': return actualVal > compareVal;
+      case '<': return actualVal < compareVal;
+      case '>=': return actualVal >= compareVal;
+      case '<=': return actualVal <= compareVal;
+      default: return false;
+    }
+  }
+
+  // 匹配选择题条件：选项ID==选项ID[索引]
+  const selectMatch = condStr.match(/^(\w+)==(\w+)\[(\d+)\]$/);
+  if (selectMatch) {
+    const selectId = selectMatch[2]; // 选择题标识
+    const targetIdx = parseInt(selectMatch[3]);
+    const wrapper = document.querySelector(`[data-select="${selectId}"]`);
+    if (!wrapper) return false;
+    const checkboxes = wrapper.querySelectorAll('input[type="checkbox"], input[type="radio"]');
+    // 对于 radio，检查被选中的选项索引
+    for (let i = 0; i < checkboxes.length; i++) {
+      if (checkboxes[i].checked) {
+        return i === targetIdx;
+      }
+    }
+    return false;
+  }
+
+  return false; // 无法解析
+}
+
+function escapeHTML(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
