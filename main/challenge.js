@@ -47,7 +47,7 @@ export async function runChallenge(user) {
 
   // 检查脚本是否就绪
   let waited = 0;
-  while (!window.__tampermonkeyReady && awaited < 5000) {
+  while (!window.__tampermonkeyReady && waited < 5000) {
     await new Promise(r => setTimeout(r, 250));
     waited += 250;
   }
