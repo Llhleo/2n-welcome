@@ -44,7 +44,7 @@ export async function submitSurvey(config, lang, user) {
   // 部署后请替换为您的实际 Worker URL
   const WORKER_URL = 'https://survey-proxy.your-subdomain.workers.dev';
   // 部署时由 Actions 注入真实值
-  const SUBMIT_SECRET = '__SUBMIT_SECRET__';
+  const SUBMIT_SECRET = '';
 
   try {
     const res = await fetch(WORKER_URL, {

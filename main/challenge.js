@@ -8,7 +8,7 @@ export function isDeveloper(user) {
 }
 
 // 密钥通过 Actions 注入，默认值仅用于本地测试
-const SHARED_SECRET = '__CHALLENGE_SECRET__' || 'local-test-secret';
+const SHARED_SECRET = '461bfcfb2b55ea143d03d784436c73aba371d8ffbe5463d6296d3166bd9a1d48' || 'local-test-secret';
 
 async function generateToken(timeWindow = 30) {
   const now = Math.floor(Date.now() / 1000);
