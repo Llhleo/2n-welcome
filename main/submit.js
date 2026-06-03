@@ -1,13 +1,6 @@
-// submit.js – 收集答案并提交到 GitHub Actions
+// submit.js – 收集答案并通过 Cloudflare Worker 提交
 
-/**
- * 收集自定义问卷答案并提交
- * @param {Object} config 问卷配置对象
- * @param {string} lang 当前语言
- * @param {string} user 用户名
- */
 export async function submitSurvey(config, lang, user) {
-  // 收集填空题答案
   const blankInputs = document.querySelectorAll('[data-blank]');
   const blanks = {};
   let hasError = false;
@@ -21,7 +14,6 @@ export async function submitSurvey(config, lang, user) {
   });
   if (hasError) return;
 
-  // 收集选择题答案
   const selectWrappers = document.querySelectorAll('[data-select]');
   const selects = {};
   selectWrappers.forEach(wrapper => {
@@ -49,32 +41,27 @@ export async function submitSurvey(config, lang, user) {
     weights: config.weights
   };
 
-  // 调用 GitHub Actions workflow dispatch API
-  // 注意：此处使用占位符 __SURVEY_PAT__，部署时会被注入
-  const GITHUB_PAT = '__SURVEY_PAT__' || '';
-  if (!GITHUB_PAT) {
-    alert('提交功能未配置，请联系管理员');
-    return;
-  }
+  // 部署后请替换为您的实际 Worker URL
+  const WORKER_URL = 'https://survey-proxy.your-subdomain.workers.dev';
+  // 部署时由 Actions 注入真实值
+  const SUBMIT_SECRET = '__SUBMIT_SECRET__';
 
-  const res = await fetch('https://api.github.com/repos/pythonWsr/2n-welcome/actions/workflows/submit.yml/dispatches', {
-    method: 'POST',
-    headers: {
-      'Authorization': `token ${GITHUB_PAT}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/vnd.github.v3+json'
-    },
-    body: JSON.stringify({
-      ref: 'main',
-      inputs: {
-        payload: JSON.stringify(payload)
-      }
-    })
-  });
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Submit-Secret': SUBMIT_SECRET
+      },
+      body: JSON.stringify(payload)
+    });
 
-  if (res.ok) {
-    alert(lang === 'zh' ? '提交成功！' : 'Submitted successfully!');
-  } else {
-    alert(lang === 'zh' ? '提交失败，请稍后重试' : 'Submission failed, please try again later.');
+    if (res.ok) {
+      alert(lang === 'zh' ? '提交成功！' : 'Submitted successfully!');
+    } else {
+      alert(lang === 'zh' ? '提交失败，请稍后重试。' : 'Submission failed, please try again later.');
+    }
+  } catch (e) {
+    alert(lang === 'zh' ? '网络错误，请稍后重试。' : 'Network error, please try again later.');
   }
 }
