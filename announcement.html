@@ -44,12 +44,14 @@
     const backBtn = document.getElementById('backButton');
     const backText = document.getElementById('backText');
     if (backBtn && backText) {
-      const params = getExplicitParams();
-      const query = buildQueryString({ lang, mode: implicit.getColorMode(), ...params });
+      // 构建带所有显式参数（包括survey）的返回链接
+      const explicitParams = getExplicitParams();
+      const query = buildQueryString({ lang, mode: implicit.getColorMode(), ...explicitParams });
       backBtn.href = 'index.html' + (query ? '?' + query : '');
       backText.textContent = lang === 'zh' ? '返回' : 'Back';
     }
 
+    // 工具函数
     function escapeHTML(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
     function getLocalizedString(raw, lang) {
       if (!raw || !raw.includes('|')) return (raw || '').trim();
@@ -191,6 +193,7 @@
       `;
     }
 
+    // 主题切换
     function applyTheme() {
       const mode = implicit.getColorMode();
       let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
