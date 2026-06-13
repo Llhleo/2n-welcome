@@ -1,9 +1,16 @@
-// fillBlanks.js – 修复条件判断
+// fillBlanks.js – 防重复渲染 + 诊断日志
 
 import { decodeRichText } from './decode.js';
 
+let isRendered = false; // 防止重复渲染
+
 export function renderCustomSurvey(container, config, lang, user) {
   if (!container || !config) return;
+  if (isRendered) {
+    console.warn('[Survey] 问卷已经渲染过，跳过重复调用。如果这是您期望的，请刷新页面。');
+    return;
+  }
+  isRendered = true;
 
   const t = config[lang] || config.zh;
   if (!t) return;
@@ -17,7 +24,7 @@ export function renderCustomSurvey(container, config, lang, user) {
 
   for (const qKey of questions) {
     const q = t[qKey];
-    html += renderQuestion(q, qKey);
+    html += renderQuestion(q, qKey, lang);
   }
 
   html += `<div class="survey-actions">
@@ -27,18 +34,13 @@ export function renderCustomSurvey(container, config, lang, user) {
 
   container.innerHTML = html;
 
-  // 初始化显示
-  setTimeout(() => evaluateAllConditions(t), 50);
+  setTimeout(() => evaluateAllConditions(t), 0);
 
-  // 监听所有输入（包括 radio/checkbox）的 click 事件，确保选中后立即评估
   document.querySelectorAll('#customSurveyForm input').forEach(el => {
-    el.addEventListener('click', () => {
-      console.log('[Events] 输入被点击，即将评估条件');
-      setTimeout(() => evaluateAllConditions(t), 50);
-    });
+    el.addEventListener('change', () => setTimeout(() => evaluateAllConditions(t), 10));
+    el.addEventListener('input', () => setTimeout(() => evaluateAllConditions(t), 10));
   });
 
-  // 导入提交模块
   import('./submit.js').then(module => {
     document.getElementById('surveySubmit')?.addEventListener('click', () => {
       module.submitSurvey(config, lang, user);
@@ -46,7 +48,7 @@ export function renderCustomSurvey(container, config, lang, user) {
   });
 }
 
-function renderQuestion(q, qKey) {
+function renderQuestion(q, qKey, lang) {
   const text = q.text || '';
   const blankMatches = [...text.matchAll(/___(\w+)___/g)];
   const selectMatches = [...text.matchAll(/\(_(\w+)_\)/g)];
@@ -79,7 +81,7 @@ function renderQuestion(q, qKey) {
       parts.push(renderBlank(match.id, cfg));
     } else {
       const cfg = q.selects?.[match.id] || {};
-      parts.push(renderSelect(match.id, cfg));
+      parts.push(renderSelect(match.id, cfg, lang));
     }
     lastIdx = match.end;
   }
@@ -107,7 +109,7 @@ function renderBlank(id, cfg) {
   return `<span class="blank-wrapper"><input type="${inputType}" name="blank_${id}" data-blank="${id}" ${requiredAttr} ${extraAttr} placeholder="${escapeHTML(id)}"/></span>`;
 }
 
-function renderSelect(id, cfg) {
+function renderSelect(id, cfg, lang) {
   const options = cfg.options || [];
   const min = cfg.min || 0;
   const max = cfg.max || 1;
@@ -115,7 +117,7 @@ function renderSelect(id, cfg) {
   const inputType = isMulti ? 'checkbox' : 'radio';
   let html = `<span class="select-wrapper" data-select="${id}" data-min="${min}" data-max="${max}">`;
   options.forEach((opt, idx) => {
-    html += `<label class="select-option"><input type="${inputType}" name="select_${id}" value="${escapeHTML(opt)}" data-option="${idx}"> ${escapeHTML(opt)}</label>`;
+    html += `<label class="select-option"><input type="${inputType}" name="select_${id}_${lang}" value="${escapeHTML(opt)}" data-option="${idx}"> ${escapeHTML(opt)}</label>`;
   });
   html += `</span>`;
   return html;
@@ -188,21 +190,27 @@ function parseSingleCondition(condStr) {
     const targetIdx = parseInt(selectMatch[3]);
     console.log(`[Conditions]   选择题条件: ${selectId}==索引${targetIdx}`);
 
-    const allInputs = document.querySelectorAll(`input[name="select_${selectId}"]`);
-    console.log(`[Conditions]   找到 ${allInputs.length} 个选项:`);
-    allInputs.forEach((inp, i) => {
-      console.log(`[Conditions]     选项 ${i}: value="${inp.value}", checked=${inp.checked}`);
+    // 通过 name 属性匹配当前语言的选项组
+    const allInputs = document.querySelectorAll(`input[name="select_${selectId}_zh"], input[name="select_${selectId}_en"]`);
+    console.log(`[Conditions]   找到 ${allInputs.length} 个输入（跨语言）`);
+    allInputs.forEach((inp, idx) => {
+      console.log(`[Conditions]     选项 ${idx}: name="${inp.name}", checked=${inp.checked}, value="${inp.value}"`);
     });
 
+    let selectedIndex = -1;
     for (let i = 0; i < allInputs.length; i++) {
       if (allInputs[i].checked) {
-        const isMatch = i === targetIdx;
-        console.log(`[Conditions]   选中索引: ${i}, 目标索引: ${targetIdx}, 匹配: ${isMatch}`);
-        return isMatch;
+        selectedIndex = i;
+        break;
       }
     }
-    console.log('[Conditions]   未选中任何选项');
-    return false;
+    if (selectedIndex === -1) {
+      console.log(`[Conditions]   未选中任何选项`);
+      return false;
+    }
+    const isMatch = selectedIndex === targetIdx;
+    console.log(`[Conditions]   选中索引: ${selectedIndex}, 目标索引: ${targetIdx}, 匹配: ${isMatch}`);
+    return isMatch;
   }
 
   console.warn(`[Conditions]   无法解析条件: "${condStr}"`);
