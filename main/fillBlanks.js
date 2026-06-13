@@ -27,11 +27,11 @@ export function renderCustomSurvey(container, config, lang, user) {
 
   container.innerHTML = html;
 
-  // 初始化显示状态
-  evaluateAllConditions(t);
+  // 初始化显示状态（延迟一点确保 DOM 完全就绪）
+  setTimeout(() => evaluateAllConditions(t), 0);
 
   // 监听输入变化
-  document.querySelectorAll('#customSurveyForm input, #customSurveyForm select').forEach(el => {
+  document.querySelectorAll('#customSurveyForm input').forEach(el => {
     el.addEventListener('change', () => evaluateAllConditions(t));
     el.addEventListener('input', () => evaluateAllConditions(t));
   });
@@ -46,18 +46,16 @@ export function renderCustomSurvey(container, config, lang, user) {
 
 function renderQuestion(q, qKey) {
   const text = q.text || '';
-  // 匹配填空：___id___
   const blankMatches = [...text.matchAll(/___(\w+)___/g)];
-  // 匹配选择：(_id_)
   const selectMatches = [...text.matchAll(/\(_(\w+)_\)/g)];
 
   let html = `<div class="survey-question" id="${qKey}"`;
 
   if (q.condition) {
     html += ` data-condition='${JSON.stringify(q.condition)}'`;
-    html += ` style="display:none;"`; // 有条件默认隐藏
+    html += ` style="display:none;"`;
   } else {
-    html += ` style="display:block;"`; // 无条件默认显示
+    html += ` style="display:block;"`;
   }
   html += `>`;
 
@@ -123,16 +121,22 @@ function renderSelect(id, cfg) {
 }
 
 function evaluateAllConditions(t) {
+  console.log('[Conditions] 开始评估所有问题条件...');
   const questions = Object.keys(t).filter(k => /^question\d+$/.test(k));
   for (const qKey of questions) {
     const q = t[qKey];
     const el = document.getElementById(qKey);
-    if (!el || !q.condition) {
-      if (el) el.style.display = 'block';
+    if (!el) continue;
+
+    if (!q.condition) {
+      el.style.display = 'block';
+      console.log(`[Conditions] ${qKey}: 无条件 -> 显示`);
       continue;
     }
+
     const show = evaluateCondition(q.condition);
     el.style.display = show ? 'block' : 'none';
+    console.log(`[Conditions] ${qKey}: 条件 ${JSON.stringify(q.condition)} -> ${show ? '显示' : '隐藏'}`);
   }
 }
 
@@ -140,7 +144,9 @@ function evaluateCondition(condition) {
   for (const orGroup of condition) {
     let allTrue = true;
     for (const condStr of orGroup) {
-      if (!parseSingleCondition(condStr)) {
+      const result = parseSingleCondition(condStr);
+      console.log(`[Conditions]   子条件 "${condStr}": ${result}`);
+      if (!result) {
         allTrue = false;
         break;
       }
@@ -179,17 +185,24 @@ function parseSingleCondition(condStr) {
   if (selectMatch) {
     const selectId = selectMatch[2];
     const targetIdx = parseInt(selectMatch[3]);
+    console.log(`[Conditions]   选择题条件: ${selectId}==索引${targetIdx}`);
     const wrapper = document.querySelector(`[data-select="${selectId}"]`);
-    if (!wrapper) return false;
+    if (!wrapper) {
+      console.warn(`[Conditions]   未找到选择题容器: [data-select="${selectId}"]`);
+      return false;
+    }
     const inputs = wrapper.querySelectorAll('input[type="radio"], input[type="checkbox"]');
     for (let i = 0; i < inputs.length; i++) {
       if (inputs[i].checked) {
+        console.log(`[Conditions]   当前选中索引: ${i}, 目标索引: ${targetIdx}, 匹配: ${i === targetIdx}`);
         return i === targetIdx;
       }
     }
+    console.log(`[Conditions]   未选中任何选项`);
     return false;
   }
 
+  console.warn(`[Conditions]   无法解析条件: "${condStr}"`);
   return false;
 }
 
