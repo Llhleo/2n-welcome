@@ -1,4 +1,4 @@
-// fillBlanks.js – 自定义问卷渲染与交互（修复条件判断）
+// fillBlanks.js – 修复条件判断
 
 import { decodeRichText } from './decode.js';
 
@@ -27,16 +27,18 @@ export function renderCustomSurvey(container, config, lang, user) {
 
   container.innerHTML = html;
 
-  // 初始化显示状态
-  setTimeout(() => evaluateAllConditions(t), 0);
+  // 初始化显示
+  setTimeout(() => evaluateAllConditions(t), 50);
 
-  // 监听输入变化（用 setTimeout 确保 DOM 更新后再评估）
+  // 监听所有输入（包括 radio/checkbox）的 click 事件，确保选中后立即评估
   document.querySelectorAll('#customSurveyForm input').forEach(el => {
-    el.addEventListener('change', () => setTimeout(() => evaluateAllConditions(t), 10));
-    el.addEventListener('input', () => setTimeout(() => evaluateAllConditions(t), 10));
+    el.addEventListener('click', () => {
+      console.log('[Events] 输入被点击，即将评估条件');
+      setTimeout(() => evaluateAllConditions(t), 50);
+    });
   });
 
-  // 绑定提交
+  // 导入提交模块
   import('./submit.js').then(module => {
     document.getElementById('surveySubmit')?.addEventListener('click', () => {
       module.submitSurvey(config, lang, user);
@@ -186,12 +188,11 @@ function parseSingleCondition(condStr) {
     const targetIdx = parseInt(selectMatch[3]);
     console.log(`[Conditions]   选择题条件: ${selectId}==索引${targetIdx}`);
 
-    // 通过 name 属性查找所有同组 radio/checkbox
     const allInputs = document.querySelectorAll(`input[name="select_${selectId}"]`);
-    if (allInputs.length === 0) {
-      console.warn(`[Conditions]   未找到任何名为 "select_${selectId}" 的输入`);
-      return false;
-    }
+    console.log(`[Conditions]   找到 ${allInputs.length} 个选项:`);
+    allInputs.forEach((inp, i) => {
+      console.log(`[Conditions]     选项 ${i}: value="${inp.value}", checked=${inp.checked}`);
+    });
 
     for (let i = 0; i < allInputs.length; i++) {
       if (allInputs[i].checked) {
@@ -200,7 +201,7 @@ function parseSingleCondition(condStr) {
         return isMatch;
       }
     }
-    console.log(`[Conditions]   未选中任何选项`);
+    console.log('[Conditions]   未选中任何选项');
     return false;
   }
 
