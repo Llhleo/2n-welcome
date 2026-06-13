@@ -1,4 +1,4 @@
-// fillBlanks.js – 自定义问卷渲染与交互
+// fillBlanks.js – 自定义问卷渲染与交互（修复条件判断）
 
 import { decodeRichText } from './decode.js';
 
@@ -27,13 +27,13 @@ export function renderCustomSurvey(container, config, lang, user) {
 
   container.innerHTML = html;
 
-  // 初始化显示状态（延迟一点确保 DOM 完全就绪）
+  // 初始化显示状态
   setTimeout(() => evaluateAllConditions(t), 0);
 
-  // 监听输入变化
+  // 监听输入变化（用 setTimeout 确保 DOM 更新后再评估）
   document.querySelectorAll('#customSurveyForm input').forEach(el => {
-    el.addEventListener('change', () => evaluateAllConditions(t));
-    el.addEventListener('input', () => evaluateAllConditions(t));
+    el.addEventListener('change', () => setTimeout(() => evaluateAllConditions(t), 10));
+    el.addEventListener('input', () => setTimeout(() => evaluateAllConditions(t), 10));
   });
 
   // 绑定提交
@@ -50,7 +50,6 @@ function renderQuestion(q, qKey) {
   const selectMatches = [...text.matchAll(/\(_(\w+)_\)/g)];
 
   let html = `<div class="survey-question" id="${qKey}"`;
-
   if (q.condition) {
     html += ` data-condition='${JSON.stringify(q.condition)}'`;
     html += ` style="display:none;"`;
@@ -186,16 +185,19 @@ function parseSingleCondition(condStr) {
     const selectId = selectMatch[2];
     const targetIdx = parseInt(selectMatch[3]);
     console.log(`[Conditions]   选择题条件: ${selectId}==索引${targetIdx}`);
-    const wrapper = document.querySelector(`[data-select="${selectId}"]`);
-    if (!wrapper) {
-      console.warn(`[Conditions]   未找到选择题容器: [data-select="${selectId}"]`);
+
+    // 通过 name 属性查找所有同组 radio/checkbox
+    const allInputs = document.querySelectorAll(`input[name="select_${selectId}"]`);
+    if (allInputs.length === 0) {
+      console.warn(`[Conditions]   未找到任何名为 "select_${selectId}" 的输入`);
       return false;
     }
-    const inputs = wrapper.querySelectorAll('input[type="radio"], input[type="checkbox"]');
-    for (let i = 0; i < inputs.length; i++) {
-      if (inputs[i].checked) {
-        console.log(`[Conditions]   当前选中索引: ${i}, 目标索引: ${targetIdx}, 匹配: ${i === targetIdx}`);
-        return i === targetIdx;
+
+    for (let i = 0; i < allInputs.length; i++) {
+      if (allInputs[i].checked) {
+        const isMatch = i === targetIdx;
+        console.log(`[Conditions]   选中索引: ${i}, 目标索引: ${targetIdx}, 匹配: ${isMatch}`);
+        return isMatch;
       }
     }
     console.log(`[Conditions]   未选中任何选项`);
