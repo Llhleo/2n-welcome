@@ -2,13 +2,6 @@
 
 import { decodeRichText } from './decode.js';
 
-/**
- * 渲染自定义问卷
- * @param {HTMLElement} container 问卷容器
- * @param {Object} config 问卷配置对象（已包含 _file 字段）
- * @param {string} lang 当前语言 (zh/en)
- * @param {string} user 当前用户名（从链接获取）
- */
 export function renderCustomSurvey(container, config, lang, user) {
   if (!container || !config) return;
 
@@ -24,7 +17,7 @@ export function renderCustomSurvey(container, config, lang, user) {
 
   for (const qKey of questions) {
     const q = t[qKey];
-    html += renderQuestion(q, qKey, lang);
+    html += renderQuestion(q, qKey);
   }
 
   html += `<div class="survey-actions">
@@ -34,16 +27,16 @@ export function renderCustomSurvey(container, config, lang, user) {
 
   container.innerHTML = html;
 
-  // 初始化条件显示
-  evaluateAllConditions(t, lang);
+  // 初始化显示状态
+  evaluateAllConditions(t);
 
-  // 绑定输入变化时重新评估条件
+  // 监听输入变化
   document.querySelectorAll('#customSurveyForm input, #customSurveyForm select').forEach(el => {
-    el.addEventListener('change', () => evaluateAllConditions(t, lang));
-    el.addEventListener('input', () => evaluateAllConditions(t, lang));
+    el.addEventListener('change', () => evaluateAllConditions(t));
+    el.addEventListener('input', () => evaluateAllConditions(t));
   });
 
-  // 绑定提交按钮
+  // 绑定提交
   import('./submit.js').then(module => {
     document.getElementById('surveySubmit')?.addEventListener('click', () => {
       module.submitSurvey(config, lang, user);
@@ -51,23 +44,25 @@ export function renderCustomSurvey(container, config, lang, user) {
   });
 }
 
-function renderQuestion(q, qKey, lang) {
+function renderQuestion(q, qKey) {
   const text = q.text || '';
-  // 匹配填空占位符 ___str___（至少三个下划线后加标识）
+  // 匹配填空：___id___
   const blankMatches = [...text.matchAll(/___(\w+)___/g)];
-  // 匹配选择占位符 (_str_)（下划线加括号）
-  const selectMatches = [...text.matchAll(/\(_(\w+)_\)/g)]; // 修改匹配：(_str_)
+  // 匹配选择：(_id_)
+  const selectMatches = [...text.matchAll(/\(_(\w+)_\)/g)];
 
   let html = `<div class="survey-question" id="${qKey}"`;
 
   if (q.condition) {
     html += ` data-condition='${JSON.stringify(q.condition)}'`;
+    html += ` style="display:none;"`; // 有条件默认隐藏
+  } else {
+    html += ` style="display:block;"`; // 无条件默认显示
   }
-  html += ` style="display:none;">`; // 默认隐藏
+  html += `>`;
 
   html += `<div class="q-text">`;
 
-  // 将所有占位符按顺序处理
   let lastIdx = 0;
   const parts = [];
   const allMatches = [
@@ -127,7 +122,7 @@ function renderSelect(id, cfg) {
   return html;
 }
 
-function evaluateAllConditions(t, lang) {
+function evaluateAllConditions(t) {
   const questions = Object.keys(t).filter(k => /^question\d+$/.test(k));
   for (const qKey of questions) {
     const q = t[qKey];
@@ -156,7 +151,6 @@ function evaluateCondition(condition) {
 }
 
 function parseSingleCondition(condStr) {
-  // 匹配填空条件
   const blankMatch = condStr.match(/^(\w+)\s*([><=!]+)\s*(.+)$/);
   if (blankMatch) {
     const id = blankMatch[1];
@@ -181,7 +175,6 @@ function parseSingleCondition(condStr) {
     }
   }
 
-  // 匹配选择题条件
   const selectMatch = condStr.match(/^(\w+)==(\w+)\[(\d+)\]$/);
   if (selectMatch) {
     const selectId = selectMatch[2];
