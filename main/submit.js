@@ -30,7 +30,7 @@ export async function submitSurvey(config, lang, user) {
   // 替换为您的 Worker 地址
   const WORKER_URL = 'https://super-feather-a36a.wusiruibaidu04.workers.dev/';
   // 提交密钥，部署后由 Actions 注入（本地测试可暂时写一个占位，但 Worker 会校验）
-  const SUBMIT_SECRET = '__SUBMIT_SECRET__' || 'temp-secret';
+  const SUBMIT_SECRET = '' || 'temp-secret';
 
   try {
     const res = await fetch(WORKER_URL, {
