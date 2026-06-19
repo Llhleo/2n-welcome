@@ -28,7 +28,7 @@ export async function submitSurvey(config, lang, user) {
   // 您的实际 Worker URL
   const WORKER_URL = 'https://super-feather-a36a.wusiruibaidu04.workers.dev/';
   // 如果 Actions 尚未注入，可先替换为 Worker 环境变量中实际设置的 SUBMIT_SECRET 值，例如：
-  const SUBMIT_SECRET = '__SUBMIT_SECRET__' !== '__SUBMIT_SECRET__' ? '__SUBMIT_SECRET__' : '您的临时测试密钥';
+  const SUBMIT_SECRET = 'ca0d00d22e154bfb7ee5e180409c5a33' !== 'ca0d00d22e154bfb7ee5e180409c5a33' ? 'ca0d00d22e154bfb7ee5e180409c5a33' : '您的临时测试密钥';
 
   try {
     const res = await fetch(WORKER_URL, {
