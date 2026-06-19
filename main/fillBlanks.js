@@ -1,4 +1,4 @@
-// fillBlanks.js – 自定义问卷渲染（临时跳过条件判断）
+// fillBlanks.js – 自定义问卷渲染与交互（带提交调试）
 
 import { decodeRichText } from './decode.js';
 
@@ -27,35 +27,33 @@ export function renderCustomSurvey(container, config, lang, user) {
 
   container.innerHTML = html;
 
-  // ======= 临时修改：无条件显示所有题目 =======
-  const questionEls = document.querySelectorAll('#customSurveyForm .survey-question');
-  questionEls.forEach(el => el.style.display = 'block');
-  console.log('[Conditions] 条件判断已跳过，所有题目直接显示');
-  // ===========================================
+  // 确保所有题目显示（临时跳过条件）
+  document.querySelectorAll('#customSurveyForm .survey-question').forEach(el => el.style.display = 'block');
 
-  // 绑定提交
-  import('./submit.js').then(module => {
-    document.getElementById('surveySubmit')?.addEventListener('click', () => {
-      module.submitSurvey(config, lang, user);
+  // 绑定提交按钮——注意：必须在 innerHTML 之后绑定
+  const submitBtn = document.getElementById('surveySubmit');
+  if (submitBtn) {
+    submitBtn.addEventListener('click', async () => {
+      console.log('[FillBlanks] 提交按钮被点击');
+      try {
+        const module = await import('./submit.js');
+        await module.submitSurvey(config, lang, user);
+      } catch (e) {
+        console.error('提交模块加载失败:', e);
+        alert('提交模块加载失败，请刷新后重试');
+      }
     });
-  });
+  } else {
+    console.error('[FillBlanks] 未找到提交按钮');
+  }
 }
-
-// 以下函数保持不变（renderQuestion, renderBlank, renderSelect 等）
-// ... 内容与之前相同，此处省略 ...
 
 function renderQuestion(q, qKey) {
   const text = q.text || '';
   const blankMatches = [...text.matchAll(/___(\w+)___/g)];
   const selectMatches = [...text.matchAll(/\(_(\w+)_\)/g)];
 
-  let html = `<div class="survey-question" id="${qKey}"`;
-  // 条件属性仍然保留在 DOM 上，但不再使用
-  if (q.condition) {
-    html += ` data-condition='${JSON.stringify(q.condition)}'`;
-  }
-  html += `>`;
-
+  let html = `<div class="survey-question" id="${qKey}">`;
   html += `<div class="q-text">`;
 
   let lastIdx = 0;
@@ -67,15 +65,12 @@ function renderQuestion(q, qKey) {
 
   for (const match of allMatches) {
     if (match.start > lastIdx) {
-      const plainText = text.substring(lastIdx, match.start);
-      parts.push(decodeRichText(plainText, 16));
+      parts.push(decodeRichText(text.substring(lastIdx, match.start), 16));
     }
     if (match.type === 'blank') {
-      const cfg = q.blanks?.[match.id] || {};
-      parts.push(renderBlank(match.id, cfg));
+      parts.push(renderBlank(match.id, q.blanks?.[match.id]));
     } else {
-      const cfg = q.selects?.[match.id] || {};
-      parts.push(renderSelect(match.id, cfg));
+      parts.push(renderSelect(match.id, q.selects?.[match.id]));
     }
     lastIdx = match.end;
   }
@@ -88,41 +83,32 @@ function renderQuestion(q, qKey) {
   return html;
 }
 
-function renderBlank(id, cfg) {
-  const requiredAttr = cfg.required ? 'required' : '';
-  const typeAttr = cfg.type || 'str';
+function renderBlank(id, cfg = {}) {
+  const required = cfg.required ? 'required' : '';
+  const type = cfg.type || 'str';
   let inputType = 'text';
-  if (typeAttr === 'int' || typeAttr === 'float') inputType = 'number';
-  let extraAttr = '';
-  if (cfg.min !== undefined) extraAttr += ` min="${cfg.min}"`;
-  if (cfg.max !== undefined) extraAttr += ` max="${cfg.max}"`;
-  if (typeAttr === 'str') {
-    if (cfg.min) extraAttr += ` minlength="${cfg.min}"`;
-    if (cfg.max) extraAttr += ` maxlength="${cfg.max}"`;
+  if (type === 'int' || type === 'float') inputType = 'number';
+  let attrs = '';
+  if (cfg.min !== undefined) attrs += ` min="${cfg.min}"`;
+  if (cfg.max !== undefined) attrs += ` max="${cfg.max}"`;
+  if (type === 'str') {
+    if (cfg.min) attrs += ` minlength="${cfg.min}"`;
+    if (cfg.max) attrs += ` maxlength="${cfg.max}"`;
   }
-  return `<span class="blank-wrapper"><input type="${inputType}" name="blank_${id}" data-blank="${id}" ${requiredAttr} ${extraAttr} placeholder="${escapeHTML(id)}"/></span>`;
+  return `<span class="blank-wrapper"><input type="${inputType}" name="blank_${id}" data-blank="${id}" ${required} ${attrs} placeholder="${escapeHTML(id)}"></span>`;
 }
 
-function renderSelect(id, cfg) {
+function renderSelect(id, cfg = {}) {
   const options = cfg.options || [];
-  const min = cfg.min || 0;
   const max = cfg.max || 1;
-  const isMulti = max > 1;
-  const inputType = isMulti ? 'checkbox' : 'radio';
-  let html = `<span class="select-wrapper" data-select="${id}" data-min="${min}" data-max="${max}">`;
+  const inputType = max > 1 ? 'checkbox' : 'radio';
+  let html = `<span class="select-wrapper" data-select="${id}" data-min="${cfg.min || 0}" data-max="${max}">`;
   options.forEach((opt, idx) => {
     html += `<label class="select-option"><input type="${inputType}" name="select_${id}" value="${escapeHTML(opt)}" data-option="${idx}"> ${escapeHTML(opt)}</label>`;
   });
   html += `</span>`;
   return html;
 }
-
-// 保留原有条件函数（已不使用，便于恢复）
-/*
-function evaluateAllConditions(t) { ... }
-function evaluateCondition(condition) { ... }
-function parseSingleCondition(condStr) { ... }
-*/
 
 function escapeHTML(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');

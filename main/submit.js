@@ -1,37 +1,21 @@
-// submit.js – 收集答案并通过 Cloudflare Worker 提交
+// submit.js – 收集答案并提交到 Cloudflare Worker
 
 export async function submitSurvey(config, lang, user) {
+  // 收集填空题
   const blankInputs = document.querySelectorAll('[data-blank]');
   const blanks = {};
-  let hasError = false;
-  blankInputs.forEach(inp => {
-    const id = inp.dataset.blank;
-    if (inp.required && !inp.value.trim()) {
-      alert(`请填写 ${id}`);
-      hasError = true;
-    }
-    blanks[id] = inp.value;
-  });
-  if (hasError) return;
+  for (const inp of blankInputs) {
+    blanks[inp.dataset.blank] = inp.value;
+  }
 
+  // 收集选择题
   const selectWrappers = document.querySelectorAll('[data-select]');
   const selects = {};
-  selectWrappers.forEach(wrapper => {
+  for (const wrapper of selectWrappers) {
     const id = wrapper.dataset.select;
     const checked = Array.from(wrapper.querySelectorAll('input:checked')).map(el => el.value);
-    const min = parseInt(wrapper.dataset.min) || 0;
-    const max = parseInt(wrapper.dataset.max) || 1;
-    if (checked.length < min) {
-      alert(`${id} 至少选择 ${min} 项`);
-      hasError = true;
-    }
-    if (checked.length > max) {
-      alert(`${id} 最多选择 ${max} 项`);
-      hasError = true;
-    }
     selects[id] = checked;
-  });
-  if (hasError) return;
+  }
 
   const payload = {
     file: config._file,
@@ -41,10 +25,12 @@ export async function submitSurvey(config, lang, user) {
     weights: config.weights
   };
 
-  // 部署后请替换为您的实际 Worker URL
-  const WORKER_URL = 'https://survey-proxy.your-subdomain.workers.dev';
-  // 部署时由 Actions 注入真实值
-  const SUBMIT_SECRET = '';
+  console.log('提交数据:', payload);
+
+  // 替换为您的 Worker 地址
+  const WORKER_URL = 'https://super-feather-a36a.wusiruibaidu04.workers.dev/';
+  // 提交密钥，部署后由 Actions 注入（本地测试可暂时写一个占位，但 Worker 会校验）
+  const SUBMIT_SECRET = '__SUBMIT_SECRET__' || 'temp-secret';
 
   try {
     const res = await fetch(WORKER_URL, {
@@ -56,12 +42,13 @@ export async function submitSurvey(config, lang, user) {
       body: JSON.stringify(payload)
     });
 
+    const text = await res.text();
     if (res.ok) {
       alert(lang === 'zh' ? '提交成功！' : 'Submitted successfully!');
     } else {
-      alert(lang === 'zh' ? '提交失败，请稍后重试。' : 'Submission failed, please try again later.');
+      alert(lang === 'zh' ? `提交失败 (${res.status}): ${text}` : `Submission failed (${res.status}): ${text}`);
     }
   } catch (e) {
-    alert(lang === 'zh' ? '网络错误，请稍后重试。' : 'Network error, please try again later.');
+    alert(lang === 'zh' ? `网络错误: ${e.message}` : `Network error: ${e.message}`);
   }
 }
