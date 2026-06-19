@@ -28,8 +28,8 @@ export async function submitSurvey(config, lang, user) {
   console.log('提交数据:', payload);
 
   const WORKER_URL = 'https://super-feather-a36a.wusiruibaidu04.workers.dev/';
-  // 如果 __SUBMIT_SECRET__ 被注入，则使用真实密钥；否则使用一个不会暴露的占位，但此时将无法通过验证。
-  let SUBMIT_SECRET = '__SUBMIT_SECRET__';
+  // 如果 ca0d00d22e154bfb7ee5e180409c5a33 被注入，则使用真实密钥；否则使用一个不会暴露的占位，但此时将无法通过验证。
+  let SUBMIT_SECRET = 'ca0d00d22e154bfb7ee5e180409c5a33';
   if (SUBMIT_SECRET.startsWith('__') && SUBMIT_SECRET.endsWith('__')) {
     console.error('SUBMIT_SECRET 尚未注入，请确保 GitHub Actions 已运行成功');
     alert('提交功能未就绪，请联系管理员。');
