@@ -1,4 +1,4 @@
-// fillBlanks.js – 自定义问卷渲染与交互（带提交调试）
+// fillBlanks.js – 自定义问卷渲染与交互（稳定版）
 
 import { decodeRichText } from './decode.js';
 
@@ -27,10 +27,10 @@ export function renderCustomSurvey(container, config, lang, user) {
 
   container.innerHTML = html;
 
-  // 确保所有题目显示（临时跳过条件）
+  // 所有题目直接显示（跳过条件判断）
   document.querySelectorAll('#customSurveyForm .survey-question').forEach(el => el.style.display = 'block');
 
-  // 绑定提交按钮——注意：必须在 innerHTML 之后绑定
+  // 绑定提交按钮
   const submitBtn = document.getElementById('surveySubmit');
   if (submitBtn) {
     submitBtn.addEventListener('click', async () => {

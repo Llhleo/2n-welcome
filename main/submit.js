@@ -1,14 +1,12 @@
 // submit.js – 收集答案并提交到 Cloudflare Worker
 
 export async function submitSurvey(config, lang, user) {
-  // 收集填空题
   const blankInputs = document.querySelectorAll('[data-blank]');
   const blanks = {};
   for (const inp of blankInputs) {
     blanks[inp.dataset.blank] = inp.value;
   }
 
-  // 收集选择题
   const selectWrappers = document.querySelectorAll('[data-select]');
   const selects = {};
   for (const wrapper of selectWrappers) {
@@ -27,10 +25,10 @@ export async function submitSurvey(config, lang, user) {
 
   console.log('提交数据:', payload);
 
-  // 替换为您的 Worker 地址
+  // 您的实际 Worker URL
   const WORKER_URL = 'https://super-feather-a36a.wusiruibaidu04.workers.dev/';
-  // 提交密钥，部署后由 Actions 注入（本地测试可暂时写一个占位，但 Worker 会校验）
-  const SUBMIT_SECRET = '' || 'ca0d00d22e154bfb7ee5e180409c5a33';
+  // 如果 Actions 尚未注入，可先替换为 Worker 环境变量中实际设置的 SUBMIT_SECRET 值，例如：
+  const SUBMIT_SECRET = '__SUBMIT_SECRET__' !== '__SUBMIT_SECRET__' ? '__SUBMIT_SECRET__' : '您的临时测试密钥';
 
   try {
     const res = await fetch(WORKER_URL, {
