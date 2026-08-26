@@ -22,7 +22,7 @@
 
   <script>
     (function() {
-      // 简易语言检测（与 implicitPipe 保持一致）
+      // 语言检测（与 implicitPipe 存储键一致）
       function getLanguage() {
         try {
           const stored = localStorage.getItem('2n_lang');
@@ -43,12 +43,12 @@
       document.getElementById('backText').textContent = t.back;
       document.getElementById('pageTitle').textContent = t.title;
 
-      // 从文件名 "1-0830.png" 中解析过期日期
+      // 从文件名 "1-0903.png" 中解析过期日期（编号-月日）
       function parseExpireDate(filename) {
-        const match = filename.match(/(\d{1,2})-(\d{2})(\d{2})\./);
+        const match = filename.match(/(\d+)-(\d{2})(\d{2})\./);
         if (!match) return null;
-        const month = parseInt(match[1], 10);
-        const day = parseInt(match[2], 10);
+        const month = parseInt(match[2], 10);  // 月份
+        const day = parseInt(match[3], 10);    // 日期
         if (isNaN(month) || isNaN(day)) return null;
         const now = new Date();
         return new Date(now.getFullYear(), month - 1, day);
@@ -103,4 +103,3 @@
   </script>
 </body>
 </html>
-
